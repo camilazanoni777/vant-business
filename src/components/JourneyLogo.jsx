@@ -4,6 +4,8 @@ const LOGO_SOURCE = '/assets/brand/vant-logo-official.png';
 // Parede de extrusao atras da face. Poucas camadas com passo maior custam
 // muito menos a compor do que muitas camadas finas, com a mesma espessura.
 const DEPTH_LAYERS = 8;
+// Planos de profundidade da haste central.
+const BEAM_LAYERS = 6;
 
 // Uma estacao por secao da jornada.
 const TOTAL_ZONES = 8;
@@ -46,6 +48,8 @@ function JourneyLogo() {
     let targetJourney = 0;
     let currentZone = 0;
     let pushTimer = 0;
+    let igniteTimer = 0;
+    const ignited = new Set();
 
     function measure() {
       const viewport = window.innerHeight || 1;
@@ -70,6 +74,16 @@ function JourneyLogo() {
       }
 
       if (index !== currentZone) {
+        // Uma vez por visita: a haste acende e a logo se aproxima.
+        if (!ignited.has(index)) {
+          ignited.add(index);
+          root.dataset.igniting = 'true';
+          window.clearTimeout(igniteTimer);
+          igniteTimer = window.setTimeout(() => {
+            root.dataset.igniting = 'false';
+          }, 1500);
+        }
+
         currentZone = index;
         setZone(index);
 
@@ -121,6 +135,7 @@ function JourneyLogo() {
     return () => {
       cancelAnimationFrame(frame);
       window.clearTimeout(pushTimer);
+      window.clearTimeout(igniteTimer);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('scroll', measure);
       window.removeEventListener('resize', handleResize);
@@ -137,10 +152,24 @@ function JourneyLogo() {
       data-zone={activeZone}
       data-reduced={isReduced ? 'true' : 'false'}
     >
-      {/* Linha unica central: nucleo fino envolvido por uma aura larga. */}
+      {/*
+        Haste 3D: planos de profundidade em verde-escuro atras de uma face
+        frontal verde-lima, com brilho de borda, sombra e halo.
+      */}
       <div className="vant-journey-line">
+        <div className="vant-journey-beam">
+          {Array.from({ length: BEAM_LAYERS }, (_, index) => (
+            <span
+              key={index}
+              className="vant-journey-beam-side"
+              style={{ '--layer': index + 1 }}
+            />
+          ))}
+          <span className="vant-journey-beam-face" />
+          <span className="vant-journey-beam-edge" />
+        </div>
+        <span className="vant-journey-beam-shadow" />
         <span className="vant-journey-line-aura" />
-        <span className="vant-journey-line-core" />
         {/* Trecho percorrido: brilho que cresce do topo conforme o scroll. */}
         <span className="vant-journey-line-progress" />
         {/* Pulso que acompanha a altura da logo. */}

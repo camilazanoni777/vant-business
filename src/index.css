@@ -1859,6 +1859,16 @@ html {
 */
 .vant-journey[data-zone='0'] .vant-journey-object { opacity: calc(1.02 - var(--j-page) * 1.9); }
 
+/* A logo se aproxima logo depois da haste acender, e estabiliza. */
+.vant-journey[data-igniting='true'] .vant-journey-enter {
+  animation: vant-journey-approach 1200ms cubic-bezier(.22, .61, .36, 1) 260ms both;
+}
+
+@keyframes vant-journey-approach {
+  from { transform: translateZ(-90px) scale(.94); opacity: .55; }
+  to   { transform: none; opacity: 1; }
+}
+
 /* Angulos por zona: cada secao revela uma face diferente da extrusao. */
 .vant-journey[data-zone='1'] .vant-journey-tilt,
 .vant-journey[data-zone='3'] .vant-journey-tilt,
@@ -1872,46 +1882,99 @@ html {
 /*
 */
 
-/* ---------- linha central unica ---------- */
+/* ---------- haste central 3D ---------- */
 
-/*
-  Uma linha so: nucleo fino verde-lima envolvido por uma aura verde-escura
-  mais larga. A aura e um gradiente que desvanece nas bordas, entao nao le
-  como uma segunda linha.
-*/
 .vant-journey-line {
   position: fixed;
   top: 0;
   bottom: 0;
   left: 50%;
   z-index: 2;
-  width: 64px;
-  margin-left: -32px;
+  width: 72px;
+  margin-left: -36px;
+  perspective: 900px;
+  perspective-origin: 50% 46%;
   pointer-events: none;
 }
 
-.vant-journey-line-aura {
+/*
+  Oscilacao lenta em Y e Z, entre 8 e 14 graus. Nunca 360: o objetivo e
+  revelar a espessura, nao girar como um loading.
+*/
+.vant-journey-beam {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(60, 90, 4, .5) 42%, rgba(74, 108, 4, .62) 50%, rgba(60, 90, 4, .5) 58%, transparent);
-  mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
+  transform-style: preserve-3d;
+  animation: vant-beam-sway 17s ease-in-out infinite alternate;
 }
 
-.vant-journey-line-core {
+/* Laterais extrudadas: verde-escuro quase preto, recuando no eixo Z. */
+.vant-journey-beam-side {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 2px;
-  margin-left: -1px;
-  background: linear-gradient(180deg, transparent, rgba(155, 220, 0, .34) 10%, rgba(155, 220, 0, .34) 90%, transparent);
+  width: 7px;
+  margin-left: -3.5px;
+  background: rgb(12 22 1);
+  transform: translateZ(calc(var(--layer) * -3px)) scaleX(calc(1 - var(--layer) * .06));
+  mask-image: linear-gradient(180deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 8%, #000 92%, transparent);
 }
 
-/*
-  Trecho percorrido: cresce do topo e ganha brilho. O gradiente termina em
-  transparente, entao o brilho diminui gradualmente acima da logo.
-*/
+.vant-journey-beam-side:nth-child(1) { background: rgb(38 58 2); }
+.vant-journey-beam-side:nth-child(2) { background: rgb(26 40 1); }
+
+/* Face frontal verde-lima. */
+.vant-journey-beam-face {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  margin-left: -1.5px;
+  transform: translateZ(4px);
+  background: linear-gradient(180deg, transparent, rgba(155, 220, 0, .85) 8%, rgba(155, 220, 0, .85) 92%, transparent);
+}
+
+/* Brilho de borda ao longo da quina. */
+.vant-journey-beam-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 9px;
+  margin-left: -4.5px;
+  transform: translateZ(5px);
+  background: linear-gradient(90deg, transparent, rgba(210, 255, 120, .5) 46%, transparent 54%);
+  filter: blur(2px);
+  mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
+}
+
+/* Sombra projetada sobre o grid, deslocada conforme a haste inclina. */
+.vant-journey-beam-shadow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 26px;
+  margin-left: -6px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .8), transparent);
+  filter: blur(9px);
+  opacity: .8;
+  animation: vant-beam-shadow 17s ease-in-out infinite alternate;
+}
+
+/* Halo verde suave e contido. */
+.vant-journey-line-aura {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(60, 90, 4, .42) 44%, rgba(74, 108, 4, .5) 50%, rgba(60, 90, 4, .42) 56%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
+}
+
 .vant-journey-line-progress {
   position: absolute;
   inset: 0 0 auto 50%;
@@ -1919,28 +1982,125 @@ html {
   height: 100%;
   margin-left: -1.5px;
   transform-origin: 50% 0;
-  transform: scaleY(calc(.04 + var(--j-journey) * .96));
-  background: linear-gradient(180deg, rgba(120, 175, 0, .35), rgba(155, 220, 0, .95));
-  box-shadow: 0 0 14px rgba(155, 220, 0, .4);
+  transform: translateZ(6px) scaleY(calc(.04 + var(--j-journey) * .96));
+  background: linear-gradient(180deg, rgba(120, 175, 0, .3), rgba(155, 220, 0, .95));
+  box-shadow: 0 0 16px rgba(155, 220, 0, .45);
 }
 
-/* Pulso que acompanha a altura da logo. */
 .vant-journey-line-pulse {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 190px;
+  width: 200px;
   height: 300px;
-  margin: -150px 0 0 -95px;
+  margin: -150px 0 0 -100px;
   background: radial-gradient(ellipse at center, rgba(155, 220, 0, .3), rgba(155, 220, 0, .08) 44%, transparent 72%);
   filter: blur(16px);
   transform: translate3d(0, calc(var(--j-journey) * 26vh), 0);
   animation: vant-journey-pulse 3.2s ease-in-out infinite alternate;
 }
 
+@keyframes vant-beam-sway {
+  from { transform: rotateY(-12deg) rotateZ(-1.6deg); }
+  to   { transform: rotateY(11deg) rotateZ(1.4deg); }
+}
+
+@keyframes vant-beam-shadow {
+  from { transform: translateX(7px); opacity: .55; }
+  to   { transform: translateX(-7px); opacity: .85; }
+}
+
 @keyframes vant-journey-pulse {
   from { opacity: .68; }
   to   { opacity: 1; }
+}
+
+/* Acende ao entrar numa secao: a haste ganha luz e volta ao normal. */
+.vant-journey[data-igniting='true'] .vant-journey-beam-face,
+.vant-journey[data-igniting='true'] .vant-journey-beam-edge {
+  animation: vant-beam-ignite 1400ms ease-out;
+}
+
+@keyframes vant-beam-ignite {
+  0%   { opacity: .3; filter: brightness(1); }
+  35%  { opacity: 1; filter: brightness(1.8); }
+  100% { opacity: 1; filter: brightness(1); }
+}
+
+/* ---------- segunda dobra: composicao editorial ---------- */
+
+.vant-presentation-section.vant-fold--composed {
+  /*
+    Coluna central menor que a das demais secoes: aqui a composicao editorial
+    tem prioridade, e o texto precisa de largura para respirar.
+  */
+  --vant-band: clamp(220px, 20vw, 300px);
+  /* A logo e menor aqui, entao a folga tambem pode ser. */
+  --vant-gutter: 1.5rem;
+  /*
+    calc() em custom property resolve no elemento que a define: sem
+    redeclarar aqui, --vant-reserved continuaria com o valor herdado de
+    .vant-presentation e a coluna nao encolheria.
+  */
+  --vant-reserved: calc(var(--vant-band) + var(--vant-gutter) * 2);
+
+  display: grid;
+  align-content: center;
+  min-height: 100svh;
+}
+
+/* A logo acompanha a coluna menor desta dobra. */
+.vant-journey[data-zone='1'] { --j-scale: .45; }
+
+.vant-fold-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) var(--vant-reserved) minmax(0, 1.3fr);
+  align-items: center;
+  gap: clamp(1.25rem, 2.6vw, 2.75rem);
+}
+
+.vant-fold-lead,
+.vant-fold-support { position: relative; z-index: 1; min-width: 0; }
+
+/* Titulo com linhas amplas, sem ficar estreito demais. */
+.vant-fold-lead h2 {
+  max-width: min(14ch, 100%);
+  margin-top: .9rem;
+  font-size: clamp(1.8rem, 2.8vw, 3.1rem);
+  line-height: 1.04;
+}
+
+/* Texto de apoio alinhado ao centro da logo, 38-45 caracteres por linha. */
+.vant-fold-support {
+  align-self: center;
+  padding-left: var(--vant-gutter);
+}
+
+.vant-fold-support p {
+  max-width: min(42ch, 100%);
+  margin: 0;
+  color: var(--vant-muted);
+  /* Corpo fixo: e o que mantem 38-45 caracteres na largura disponivel. */
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.vant-fold-centre { width: var(--vant-reserved); height: 1px; }
+
+/* Ordem da revelacao: eyebrow, titulo, haste, logo e por fim o apoio. */
+[data-revealed='true'] [data-reveal='support'] { transition-delay: 520ms; }
+
+/* Menos largura disponivel: o apoio recebe mais peso para manter 38+ chars. */
+@media (max-width: 1180px) {
+  .vant-fold-stage { grid-template-columns: minmax(0, 1fr) var(--vant-reserved) minmax(0, 1.45fr); }
+}
+
+@media (max-width: 1023px) {
+  .vant-presentation-section.vant-fold--composed { min-height: auto; }
+  .vant-fold-stage { grid-template-columns: 1fr; }
+  .vant-fold-centre { display: none; }
+  .vant-fold-support { padding-left: 0; }
+  .vant-fold-lead h2 { max-width: 100%; }
 }
 
 /* ---------- rastro da logo ---------- */
@@ -2480,4 +2640,20 @@ html {
   .vant-journey[data-zone='3'], .vant-journey[data-zone='4'],
   .vant-journey[data-zone='5'], .vant-journey[data-zone='6'],
   .vant-journey[data-zone='7'] { --j-scale: .48; }
+}
+
+/*
+  Mobile: o conteudo ocupa a largura toda, entao a haste nao pode competir com
+  a leitura. Vira uma linha fina de fundo, sem extrusao, pulso ou brilho forte.
+*/
+@media (max-width: 1023px) {
+  .vant-journey-line { width: 18px; margin-left: -9px; z-index: 0; opacity: .3; }
+  .vant-journey-beam { animation: none; transform: none; }
+  .vant-journey-beam-side,
+  .vant-journey-beam-shadow,
+  .vant-journey-beam-edge,
+  .vant-journey-line-pulse { display: none; }
+  .vant-journey-beam-face { width: 1px; margin-left: -.5px; transform: none; }
+  .vant-journey-line-progress { width: 1px; margin-left: -.5px; box-shadow: none; transform: scaleY(calc(.04 + var(--j-journey) * .96)); }
+  .vant-journey-line-aura { opacity: .5; }
 }

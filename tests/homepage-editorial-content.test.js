@@ -336,7 +336,7 @@ test('a single object travels the page along a rail', () => {
 
   // Esteira com linha, marcadores e ponto de luz que acompanha o objeto.
   assert.match(journeyLogoSource, /vant-journey-line-aura/);
-  assert.match(journeyLogoSource, /vant-journey-line-core/);
+  assert.match(journeyLogoSource, /vant-journey-beam-face/);
   assert.match(journeyLogoSource, /vant-journey-line-pulse/);
   assert.match(homeStyles, /\.vant-journey-line-pulse \{[\s\S]*?var\(--j-journey\)/);
 });
@@ -525,9 +525,9 @@ test('the object eases into each section with a short camera push', () => {
 
 test('a single central line replaces the old column', () => {
   // Nucleo fino + aura larga, sem trilhos paralelos nem bordas laterais.
-  assert.match(journeyLogoSource, /vant-journey-line-core/);
+  assert.match(journeyLogoSource, /vant-journey-beam-face/);
   assert.match(journeyLogoSource, /vant-journey-line-aura/);
-  assert.match(homeStyles, /\.vant-journey-line-core \{[\s\S]*?width: 2px/);
+  assert.match(homeStyles, /\.vant-journey-beam-face \{[\s\S]*?width: 3px/);
   assert.match(homeStyles, /\.vant-journey-line-aura \{[\s\S]*?linear-gradient\(90deg, transparent/);
 
   // Nada de estacoes, nos, chips ou particulas soltas.
@@ -555,10 +555,13 @@ test('the inner-section logo grew and gained presence', () => {
 
 test('the centre reserves a visual column plus breathing room', () => {
   // Coluna visual entre 260px e 400px.
-  const col = homeStyles.match(/--vant-band: clamp\((\d+)px, [\d.]+vw, (\d+)px\)/);
-  assert.ok(col, 'a coluna central deve ter largura propria');
-  assert.ok(Number(col[1]) >= 260 && Number(col[2]) <= 400,
-    `coluna deve ficar entre 260px e 400px, veio ${col[1]}-${col[2]}`);
+  // Varias declaracoes de --vant-band existem (a dobra 2 tem a sua).
+  // Nenhuma pode passar de 400px, e a principal fica entre 260 e 400.
+  const bandas = [...homeStyles.matchAll(/--vant-band: clamp\((\d+)px, [\d.]+vw, (\d+)px\)/g)]
+    .map((m) => [Number(m[1]), Number(m[2])]);
+  assert.ok(bandas.length > 0, 'a coluna central deve ter largura propria');
+  bandas.forEach(([, max]) => assert.ok(max <= 400, `coluna nao pode passar de 400px, veio ${max}`));
+  assert.ok(bandas.some(([min, max]) => min >= 260 && max <= 400), 'falta a coluna principal entre 260 e 400px');
 
   // A trilha das grades reserva coluna + folga dos dois lados.
   assert.match(homeStyles, /--vant-reserved: calc\(var\(--vant-band\) \+ var\(--vant-gutter\) \* 2\)/);
@@ -572,11 +575,57 @@ test('the centre reserves a visual column plus breathing room', () => {
   assert.match(homeStyles, /\.vant-presentation-section h2 \{ font-size: clamp\(/);
 });
 
-test('the 01-08 flow stays as section content, not journey markers', () => {
-  // Os oito nomes voltam a ser conteudo da Visao Sistemica.
-  assert.match(homePageSource, /vant-systems-flow/);
-  assert.equal(systemsFlow.length, 8);
-  assert.doesNotMatch(journeyLogoSource, /systemsFlow/);
-  // E a grade deles tambem reserva a trilha central.
-  assert.match(homeStyles, /\.vant-systems-flow \{[\s\S]*?var\(--vant-reserved\)/);
+test('the second fold is an editorial three-area composition', () => {
+  // Tres areas, 100svh e nenhum marcador 01-08.
+  assert.match(homePageSource, /vant-fold--composed/);
+  assert.match(homePageSource, /vant-fold-lead/);
+  assert.match(homePageSource, /vant-fold-centre/);
+  assert.match(homePageSource, /vant-fold-support/);
+  assert.doesNotMatch(homePageSource, /vant-systems-flow|systemsFlow/);
+  assert.match(homeStyles, /\.vant-fold--composed \{[\s\S]*?min-height: 100svh/);
+  assert.match(homeStyles, /\.vant-fold-stage \{[\s\S]*?minmax\(0, 1\.15fr\) var\(--vant-reserved\) minmax\(0, 1\.3fr\)/);
+
+  // Eyebrow acima do titulo, na esquerda; apoio na direita.
+  assert.ok(homePageSource.indexOf("data-reveal=\"eyebrow\"") < homePageSource.indexOf('id="systemic-vision-title"'));
+  assert.match(homeStyles, /\.vant-fold-support p \{[\s\S]*?max-width: min\(4[0-5]ch, 100%\)/);
+
+  // A coluna central desta dobra e menor, e --vant-reserved e redeclarado:
+  // calc() em custom property resolve no elemento que a define.
+  assert.match(homeStyles, /\.vant-fold--composed \{[\s\S]*?--vant-reserved: calc\(var\(--vant-band\) \+ var\(--vant-gutter\) \* 2\)/);
+});
+
+test('the central line became an extruded 3D beam', () => {
+  assert.match(journeyLogoSource, /BEAM_LAYERS = \d+/);
+  assert.match(journeyLogoSource, /vant-journey-beam-side/);
+  assert.match(journeyLogoSource, /vant-journey-beam-face/);
+  assert.match(journeyLogoSource, /vant-journey-beam-edge/);
+  assert.match(journeyLogoSource, /vant-journey-beam-shadow/);
+
+  assert.match(homeStyles, /\.vant-journey-line \{[\s\S]*?perspective:/);
+  assert.match(homeStyles, /\.vant-journey-beam \{[\s\S]*?transform-style: preserve-3d/);
+  assert.match(homeStyles, /\.vant-journey-beam-side \{[\s\S]*?translateZ/);
+
+  // Oscilacao lenta entre 8 e 14 graus, nunca 360.
+  const sway = homeStyles.match(/@keyframes vant-beam-sway \{[\s\S]*?[\r\n]\}/);
+  assert.ok(sway, 'falta a oscilacao da haste');
+  const angulos = [...sway[0].matchAll(/rotate[YZ]\((-?[\d.]+)deg\)/g)].map((m) => Math.abs(Number(m[1])));
+  assert.ok(Math.max(...angulos) <= 14, `oscilacao deve ficar ate 14 graus, veio ${Math.max(...angulos)}`);
+  assert.doesNotMatch(sway[0], /360deg/);
+});
+
+test('entering a section ignites the beam, then the logo, then the text', () => {
+  // Uma vez por secao: o Set impede repetir na mesma visita.
+  assert.match(journeyLogoSource, /const ignited = new Set\(\)/);
+  assert.match(journeyLogoSource, /ignited\.has\(index\)/);
+  assert.match(journeyLogoSource, /data-igniting|igniting/);
+
+  // Haste acende, logo se aproxima com atraso, texto de apoio por ultimo.
+  assert.match(homeStyles, /@keyframes vant-beam-ignite/);
+  assert.match(homeStyles, /\[data-igniting='true'\] \.vant-journey-enter \{[\s\S]*?vant-journey-approach/);
+  assert.match(homeStyles, /@keyframes vant-journey-approach/);
+  assert.match(homeStyles, /\[data-reveal='support'\] \{ transition-delay: (\d+)ms/);
+
+  const apoio = Number(homeStyles.match(/\[data-reveal='support'\] \{ transition-delay: (\d+)ms/)[1]);
+  const titulo = Number(homeStyles.match(/\[data-reveal='title'\]\s*\{ transition-delay: (\d+)ms/)[1]);
+  assert.ok(apoio > titulo, 'o apoio deve entrar depois do titulo');
 });

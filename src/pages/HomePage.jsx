@@ -11,7 +11,6 @@ import {
   finalDiagnosticCta,
   squads,
   studioBusiness,
-  systemsFlow,
   systemicVision,
   teamMembers,
 } from '../data/vantPresentation.js';
@@ -65,20 +64,24 @@ function HeroSection() {
 
 function SystemicVisionSection() {
   return (
-    <section className="vant-presentation-section vant-systemic-vision" aria-labelledby="systemic-vision-title">
-      <div className="vant-presentation-section-copy">
-        <p className="brand-kicker" data-reveal="eyebrow">{systemicVision.eyebrow}</p>
-        <h2 id="systemic-vision-title" data-reveal="title">{systemicVision.title}</h2>
-        <p>{systemicVision.description}</p>
+    <section
+      id="visao-sistemica"
+      className="vant-presentation-section vant-systemic-vision vant-fold--composed"
+      aria-labelledby="systemic-vision-title"
+    >
+      <div className="vant-fold-stage">
+        <div className="vant-fold-lead">
+          <p className="brand-kicker" data-reveal="eyebrow">{systemicVision.eyebrow}</p>
+          <h2 id="systemic-vision-title" data-reveal="title">{systemicVision.title}</h2>
+        </div>
+
+        {/* A logo e a haste sao fixas: aqui so a largura central e reservada. */}
+        <div className="vant-fold-centre" aria-hidden="true" />
+
+        <div className="vant-fold-support">
+          <p data-reveal="support">{systemicVision.description}</p>
+        </div>
       </div>
-      <ol className="vant-systems-flow" data-reveal="grid" aria-label="Fluxo de crescimento integrado">
-        {systemsFlow.map((step, index) => (
-          <li key={step}>
-            <span>{String(index + 1).padStart(2, '0')}</span>
-            {step}
-          </li>
-        ))}
-      </ol>
     </section>
   );
 }

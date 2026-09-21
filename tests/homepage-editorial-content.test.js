@@ -26,7 +26,7 @@ const teamCardSource = readFileSync(
   'utf8',
 );
 const journeyLogoSource = readFileSync(
-  new URL('../src/components/JourneyLogo.jsx', import.meta.url),
+  new URL('../src/components/JourneyPath.jsx', import.meta.url),
   'utf8',
 );
 const headerSource = readFileSync(
@@ -274,21 +274,6 @@ test('TeamCard supports per-profile framing without a global crop', () => {
   assert.match(teamCardSource, /style=\{objectPosition \? \{ objectPosition \} : undefined\}/);
 });
 
-test('the first fold composes title, monumental object and support', () => {
-  assert.match(homePageSource, /vant-hero--composed/);
-  assert.match(homePageSource, /vant-hero-title-area/);
-  assert.match(homePageSource, /vant-hero-object-slot/);
-  assert.match(homePageSource, /<JourneyLogo \/>/);
-  assert.match(homePageSource, /vant-hero-support/);
-  assert.doesNotMatch(homePageSource, /BrandIntro|HeroLogo|FlyingLogo/);
-  assert.equal(existsSync(new URL('../src/components/BrandIntro.jsx', import.meta.url)), false);
-  assert.equal(existsSync(new URL('../src/components/HeroLogo.jsx', import.meta.url)), false);
-  assert.equal(existsSync(new URL('../src/components/FlyingLogo.jsx', import.meta.url)), false);
-
-  assert.ok(homePageSource.indexOf('vant-hero-title-area') < homePageSource.indexOf('vant-hero-object-slot'));
-  assert.ok(homePageSource.indexOf('vant-hero-object-slot') < homePageSource.indexOf('vant-hero-support'));
-  assert.ok(homePageSource.indexOf('vant-hero-stage') < homePageSource.indexOf('<EcosystemVisual />'));
-});
 
 test('the monumental object is scaled to the viewport height', () => {
   // 75vh a 95vh no desktop.
@@ -304,88 +289,10 @@ test('the monumental object is scaled to the viewport height', () => {
   assert.doesNotMatch(homeStyles, /\.vant-hero--composed \.vant-hero-title-area h1 \{[^}]*break-word/);
 });
 
-test('the object is built from layers of the real logo art', () => {
-  // Pega o bloco que de fato declara a mascara (ha outro seletor com o
-  // mesmo nome so para desligar as camadas fora da dobra).
-  const maskRule = homeStyles.match(/\.vant-journey-depth,[\s\S]*?-webkit-mask:[^;]+;[\s\S]*?[\r\n]\}/);
-  assert.ok(maskRule, 'depth/rim/fill/sheen compartilham a mascara da logo');
-  assert.match(maskRule[0], /mask: url\("\/assets\/brand\/vant-logo-official\.png"\)/);
-  assert.match(maskRule[0], /-webkit-mask: url\("\/assets\/brand\/vant-logo-official\.png"\)/);
 
-  // A face frontal e a arte oficial, sem mascara nem gradiente por cima.
-  assert.match(journeyLogoSource, /className="vant-journey-face"[\s\S]*?src=\{LOGO_SOURCE\}/);
-  assert.doesNotMatch(homeStyles, /\.vant-journey-face \{[^}]*mask:/);
 
-  assert.match(journeyLogoSource, /DEPTH_LAYERS = \d+/);
-  assert.match(homeStyles, /\.vant-journey-depth \{[\s\S]*?translateZ/);
-  assert.match(homeStyles, /transform-style: preserve-3d/);
-  assert.match(homeStyles, /\.vant-journey-object \{[\s\S]*?perspective:/);
-});
 
-test('a single object travels the page along a rail', () => {
-  // Um unico objeto, nunca duplicado por secao.
-  assert.equal((homePageSource.match(/<JourneyLogo \/>/g) || []).length, 1);
-  assert.equal((journeyLogoSource.match(/className="vant-journey-object"/g) || []).length, 1);
-  assert.match(journeyLogoSource, /aria-hidden="true"/);
-  assert.match(homeStyles, /\.vant-journey-object \{[\s\S]*?pointer-events: none/);
 
-  // Uma zona por secao, com posicao e opacidade proprias.
-  for (let zone = 0; zone <= 7; zone += 1) {
-    assert.match(homeStyles, new RegExp(`\\.vant-journey\\[data-zone='${zone}'\\]`), `falta a zona ${zone}`);
-  }
-
-  // Esteira com linha, marcadores e ponto de luz que acompanha o objeto.
-  assert.match(journeyLogoSource, /vant-journey-line-aura/);
-  assert.match(journeyLogoSource, /vant-journey-beam-face/);
-  assert.match(journeyLogoSource, /vant-journey-line-pulse/);
-  assert.match(homeStyles, /\.vant-journey-line-pulse \{[\s\S]*?var\(--j-journey\)/);
-});
-
-test('the object only animates compositor-friendly properties', () => {
-  const rule = homeStyles.match(/\.vant-journey-object \{[\s\S]*?\n\}/);
-  assert.ok(rule);
-  assert.match(rule[0], /transition:\s*[\s\S]*?transform [^;]*,\s*[\s\S]*?opacity/);
-  assert.doesNotMatch(rule[0], /transition:[^;]*(left|top|margin)/);
-  assert.match(journeyLogoSource, /requestAnimationFrame/);
-  assert.match(journeyLogoSource, /\{ passive: true \}/);
-});
-
-test('the opaque hero object fades before content scrolls under it', () => {
-  // O objeto e fixo: sem o decaimento, o conteudo da dobra passaria por baixo
-  // dele enquanto ainda esta opaco.
-  assert.match(homeStyles, /\[data-zone='0'\] \.vant-journey-object \{ opacity: calc\(1\.02 - var\(--j-page\)/);
-  assert.match(journeyLogoSource, /--j-page/);
-
-  // Fora da dobra a logo fica em primeiro plano, nunca abaixo de 45%.
-  ['1', '2', '3', '4', '5', '6', '7'].forEach((zone) => {
-    const rule = homeStyles.match(new RegExp(`\\.vant-journey\\[data-zone='${zone}'\\] \\{[^}]*\\}`));
-    assert.ok(rule, `falta a zona ${zone}`);
-    // '.5' e '.56' sao 50% e 56%: le o decimal, nao os digitos soltos.
-    const opacity = Number(rule[0].match(/--j-opacity: (\.\d+|\d?\.?\d+)/)[1]);
-    assert.ok(opacity >= 0.45, `zona ${zone} deve ficar em primeiro plano, veio ${opacity}`);
-  });
-});
-
-test('mobile keeps content off the object and simplifies the rail', () => {
-  // Objeto no topo, conteudo sempre depois dele.
-  assert.match(homeStyles, /\.vant-hero-object-slot \{ order: 1;/);
-  assert.match(homeStyles, /\.vant-hero-title-area \{ order: 2;/);
-  assert.match(homeStyles, /\.vant-hero-support \{ order: 3;/);
-  // Esteira simplificada.
-  assert.match(homeStyles, /\.vant-journey-line-pulse \{ animation: none;/);
-});
-
-test('reduced motion keeps the object static, monumental and rail-free', () => {
-  const blocks = homeStyles.split('@media (prefers-reduced-motion: reduce) {').slice(1);
-  const block = blocks.find((b) => b.includes("[data-reduced='true']"));
-  assert.ok(block, 'o bloco de movimento reduzido deve cobrir o objeto');
-  assert.match(block, /opacity: 1 !important/);
-  assert.match(block, /\.vant-journey-halo \{ animation: none !important; opacity: \.85/);
-  // Sem viagem: o objeto fica preso a primeira dobra e a esteira some.
-  assert.match(block, /\[data-reduced='true'\] \.vant-journey-object \{ position: absolute/);
-  assert.match(block, /\[data-reduced='true'\] \.vant-journey-line \{ display: none/);
-  assert.match(journeyLogoSource, /prefers-reduced-motion: reduce/);
-});
 
 test('the mobile menu is really hidden until it is opened', () => {
   // O atributo `hidden` sozinho nao basta: uma classe de display fixa venceria
@@ -394,50 +301,7 @@ test('the mobile menu is really hidden until it is opened', () => {
   assert.match(headerSource, /hidden=\{!isMenuOpen\}/);
 });
 
-test('the conducting object and the rail never leave the centre', () => {
-  // Nenhuma zona desloca o objeto na horizontal.
-  assert.doesNotMatch(homeStyles, /\.vant-journey\[data-zone='\d'\][^}]*--j-x/);
-  // data-side pertence as estacoes (conector esq/dir), nunca a logo.
-  assert.doesNotMatch(homeStyles, /\.vant-journey\[data-side/);
 
-  // A descida vem do progresso do documento, nao de saltos por zona.
-  assert.match(homeStyles, /\.vant-journey-object \{[\s\S]*?translate3d\(0, calc\(var\(--j-y\) \+ var\(--j-journey\) \* 26vh\), 0\)/);
-  assert.match(journeyLogoSource, /--j-journey/);
-  assert.match(journeyLogoSource, /scrollHeight - viewport/);
-
-  // A esteira nao tem transform horizontal e acompanha a mesma descida.
-  const rail = homeStyles.match(/\.vant-journey-line \{[\s\S]*?[\r\n]\}/);
-  assert.ok(rail);
-  assert.doesNotMatch(rail[0], /transform:/);
-  assert.match(homeStyles, /\.vant-journey-line-pulse \{[\s\S]*?var\(--j-journey\)/);
-});
-
-test('every section reserves the central exclusion band', () => {
-  assert.match(homeStyles, /--vant-band: clamp\(/);
-  assert.match(homeStyles, /--vant-side: calc\(\(100% - var\(--vant-reserved\)\) \/ 2\)/);
-
-  // A copy nunca passa da lateral e alterna de lado por secao.
-  assert.match(homeStyles, /\.vant-presentation-section-copy,[\s\S]*?max-width: var\(--vant-side\)/);
-  assert.match(homeStyles, /section:nth-of-type\(even\) \.vant-presentation-section-copy/);
-
-  // Toda grade larga abre uma trilha do tamanho da faixa.
-  ['vant-systems-flow', 'vant-method-steps', 'vant-business-units-grid',
-   'vant-growth-system-grid', 'vant-team-grid', 'vant-squads-table-row'].forEach((grid) => {
-    assert.match(
-      homeStyles,
-      new RegExp(String.raw`\.` + grid + String.raw`[^{]*\{[^}]*grid-template-columns:[^;]*var\(--vant-reserved\)`),
-      `${grid} deve reservar a faixa central`,
-    );
-  });
-
-  // Graficos que nasciam centrados foram para uma lateral.
-  assert.match(homeStyles, /\.vant-ecosystem \{[^}]*width: var\(--vant-side\)/);
-  assert.match(homeStyles, /\.vant-final-diagnostic-content \{[^}]*max-width: var\(--vant-side\)/);
-  assert.match(homeStyles, /\.vant-final-diagnostic-ornament \{ display: none; \}/);
-
-  // Sem logo ao centro, a faixa desaparece e o conteudo volta a largura total.
-  assert.match(homeStyles, /@media \(max-width: 1023px\) \{\s*\.vant-presentation \{ --vant-band: 0px; \}/);
-});
 
 test('sections reveal their parts in order, only once', () => {
   // Etiqueta -> titulo -> texto/CTA -> cards.
@@ -464,168 +328,120 @@ test('sections reveal their parts in order, only once', () => {
   });
 });
 
-test('the journey layers stack above the page without capturing input', () => {
-  // grid/fundos < conteudo lateral < esteira < logo < header
-  const obj = homeStyles.match(/\.vant-journey-object \{[\s\S]*?[\r\n]\}/);
-  assert.ok(obj);
-  const objZ = Number(obj[0].match(/z-index: (\d+)/)[1]);
-  const rail = homeStyles.match(/\.vant-journey-line \{[\s\S]*?[\r\n]\}/);
-  const railZ = Number(rail[0].match(/z-index: (\d+)/)[1]);
+test('the journey is one continuous SVG path across every section', () => {
+  // Um caminho so, nao um traco por secao.
+  assert.match(journeyLogoSource, /buildPath/);
+  assert.equal((journeyLogoSource.match(/<svg/g) || []).length, 1);
+  assert.match(journeyLogoSource, /let d = `M /);
 
-  assert.ok(objZ > railZ, 'a logo deve ficar acima da esteira');
-    assert.ok(railZ >= 2, 'a coluna deve ficar acima do grid e dos fundos');
-  assert.ok(objZ < 50, 'o header (z-50) deve continuar acima da logo');
-  assert.match(obj[0], /pointer-events: none/);
-
-  // Centralizacao independente do tamanho, sem margem negativa.
-  assert.match(obj[0], /translate\(-50%, -50%\)/);
-  assert.doesNotMatch(obj[0], /margin: calc\(var\(--j-size\)/);
-
-  // A profundidade acompanha a logo por toda a pagina.
-  assert.doesNotMatch(homeStyles, /not\(\[data-zone='0'\]\)[^{]*\{ display: none/);
-});
-
-test('the rail grows with the scroll and pulses with the object', () => {
-  // Trecho percorrido cresce do topo para baixo.
-  const prog = homeStyles.match(/\.vant-journey-line-progress \{[\s\S]*?[\r\n]\}/);
-  assert.ok(prog, 'falta o trecho percorrido da coluna');
-  assert.match(prog[0], /transform-origin: 50% 0/);
-  assert.match(prog[0], /scaleY\(calc\(.*var\(--j-journey\)/);
-  assert.match(journeyLogoSource, /vant-journey-line-progress/);
-
-  // Pulso acompanha a logo na mesma descida.
-  const glow = homeStyles.match(/\.vant-journey-line-pulse \{[\s\S]*?[\r\n]\}/);
-  assert.match(glow[0], /var\(--j-journey\) \* 26vh/);
-  assert.match(glow[0], /animation: vant-journey-pulse/);
-
-  // Sem particulas soltas: o fluxo e o proprio brilho da linha.
-  assert.doesNotMatch(homeStyles, /@keyframes vant-journey-flow/);
-});
-
-test('each section shifts the perspective of the object', () => {
-  const eixos = ['1', '2', '3', '4', '5', '6', '7'].map((zone) => {
-    const rule = homeStyles.match(new RegExp(String.raw`\.vant-journey\[data-zone='` + zone + String.raw`'\] \{[^}]*\}`));
-    assert.ok(rule, `falta a zona ${zone}`);
-    assert.match(rule[0], /--j-rx:/, `zona ${zone} sem inclinacao X`);
-    assert.match(rule[0], /--j-ry:/, `zona ${zone} sem rotacao Y`);
-    return rule[0].match(/--j-ry: (-?[\d.]+)deg/)[1];
-  });
-  // Angulos diferentes entre secoes: revela outra face a cada uma.
-  assert.ok(new Set(eixos).size > 1, 'as zonas devem variar a perspectiva');
-});
-
-
-
-
-test('the object eases into each section with a short camera push', () => {
-  assert.match(journeyLogoSource, /--j-push/);
-  assert.match(journeyLogoSource, /setTimeout/);
-  assert.match(homeStyles, /scale\(calc\(var\(--j-scale\) \* var\(--j-push, 1\)\)\)/);
-});
-
-test('a single central line replaces the old column', () => {
-  // Nucleo fino + aura larga, sem trilhos paralelos nem bordas laterais.
-  assert.match(journeyLogoSource, /vant-journey-beam-face/);
-  assert.match(journeyLogoSource, /vant-journey-line-aura/);
-  assert.match(homeStyles, /\.vant-journey-beam-face \{[\s\S]*?width: 3px/);
-  assert.match(homeStyles, /\.vant-journey-line-aura \{[\s\S]*?linear-gradient\(90deg, transparent/);
-
-  // Nada de estacoes, nos, chips ou particulas soltas.
-  ['vant-journey-station', 'vant-journey-column-edge', 'vant-journey-particles',
-   'vant-journey-rail'].forEach((antigo) => {
-    assert.doesNotMatch(journeyLogoSource, new RegExp(antigo), `${antigo} nao deve existir`);
-    assert.doesNotMatch(homeStyles, new RegExp(String.raw`\.` + antigo), `estilo de ${antigo} nao deve existir`);
+  // Tres camadas acesas + trilho apagado + pulso.
+  ['vant-journey-track', 'vant-journey-glow', 'vant-journey-stroke',
+   'vant-journey-core', 'vant-journey-pulse'].forEach((camada) => {
+    assert.match(journeyLogoSource, new RegExp(camada), `falta ${camada}`);
+    assert.match(homeStyles, new RegExp(String.raw`\.` + camada), `falta o estilo de ${camada}`);
   });
 
-  // Rastro curto abaixo da logo permanece.
-  assert.match(journeyLogoSource, /vant-journey-trail/);
+  // O traco principal e mais espesso que a linha antiga (2px).
+  const stroke = homeStyles.match(/\.vant-journey-stroke \{[\s\S]*?stroke-width: (\d+)/);
+  assert.ok(Number(stroke[1]) >= 5, `traco principal deve ser mais espesso, veio ${stroke[1]}`);
+  assert.match(homeStyles, /\.vant-journey-glow \{[\s\S]*?filter: blur/);
 });
 
-test('the inner-section logo grew and gained presence', () => {
-  // Opacidade entre 70% e 90% fora da primeira dobra.
-  ['1', '2', '3', '4', '5', '6', '7'].forEach((zone) => {
-    const rule = homeStyles.match(new RegExp(String.raw`\.vant-journey\[data-zone='` + zone + String.raw`'\] \{[^}]*\}`));
-    assert.ok(rule, `falta a zona ${zone}`);
-    const opacity = Number(rule[0].match(/--j-opacity: (\.\d+|\d?\.?\d+)/)[1]);
-    assert.ok(opacity >= 0.7 && opacity <= 0.9, `zona ${zone} deve ficar entre .70 e .90, veio ${opacity}`);
-    const scale = Number(rule[0].match(/--j-scale: (\.\d+|\d?\.?\d+)/)[1]);
-    assert.ok(scale >= 0.5, `zona ${zone} deve ter crescido, veio ${scale}`);
+test('the path zig-zags and passes through each symbol centre', () => {
+  // Os mesmos offsets alimentam o caminho e a posicao do simbolo.
+  const offsets = journeyLogoSource.match(/const OFFSETS = \[([^\]]+)\]/);
+  assert.ok(offsets, 'falta a lista de deslocamentos');
+  const valores = offsets[1].split(',').map((v) => Number(v.trim()));
+  assert.equal(valores.length, 8);
+  // Alterna de lado: existe ao menos um positivo e um negativo.
+  assert.ok(valores.some((v) => v > 0) && valores.some((v) => v < 0), 'os lados devem alternar');
+
+  // O ancoradouro do simbolo e o mesmo ponto usado no caminho.
+  assert.match(journeyLogoSource, /x: width \/ 2 \+ offset \* width/);
+  assert.match(journeyLogoSource, /--symbol-x/);
+  assert.match(journeyLogoSource, /--symbol-y/);
+
+  // Amplitude menor em telas estreitas.
+  assert.match(journeyLogoSource, /const narrow = window\.innerWidth < 1024/);
+});
+
+test('the path is drawn progressively with the scroll', () => {
+  assert.match(journeyLogoSource, /strokeDasharray/);
+  assert.match(journeyLogoSource, /strokeDashoffset/);
+  assert.match(journeyLogoSource, /length \* \(1 - progress\)/);
+  // Pulso percorrendo o caminho.
+  assert.match(homeStyles, /@keyframes vant-path-pulse/);
+  assert.match(homeStyles, /\.vant-journey-pulse \{[\s\S]*?stroke-dasharray/);
+});
+
+test('each symbol spins with the scroll, not on a loop', () => {
+  // Rotacao proporcional ao trecho percorrido da secao, entre 90 e 180 graus.
+  const giro = journeyLogoSource.match(/ROTATION_PER_SECTION = (\d+)/);
+  assert.ok(giro, 'falta a rotacao por secao');
+  assert.ok(Number(giro[1]) >= 90 && Number(giro[1]) <= 180,
+    `rotacao deve ficar entre 90 e 180 graus, veio ${giro[1]}`);
+  assert.match(journeyLogoSource, /--spin/);
+  assert.match(homeStyles, /\.vant-journey-symbol-solid \{[\s\S]*?rotateZ\(var\(--spin\)\)/);
+
+  // Sem animacao automatica girando sozinha.
+  // Sem animacao automatica: a rotacao vem do scroll.
+  const solid = homeStyles.match(/\.vant-journey-symbol-solid \{[\s\S]*?[\r\n]\}/);
+  assert.doesNotMatch(solid[0], /animation:/);
+
+  // Inclinacao 3D, foco ao centrar, sombra e halo.
+  assert.match(homeStyles, /\.vant-journey-symbol-solid \{[\s\S]*?rotateY/);
+  assert.match(homeStyles, /--focus/);
+  assert.match(homeStyles, /\.vant-journey-symbol-shadow \{/);
+  assert.match(homeStyles, /\.vant-journey-symbol-halo \{/);
+});
+
+test('every fold fills the viewport with bigger type', () => {
+  assert.match(homeStyles, /\.vant-presentation-section \{[\s\S]*?min-height: 100svh/);
+
+  // Titulos grandes com clamp e entrelinha fechada.
+  const h2 = homeStyles.match(/\.vant-presentation-section h2 \{[\s\S]*?[\r\n]\}/);
+  assert.ok(h2);
+  assert.match(h2[0], /font-size: clamp\([^)]*\)/);
+  assert.match(h2[0], /line-height: 1;/);
+
+  // Paragrafos entre 380px e 520px.
+  assert.match(homeStyles, /\.vant-fold-support p \{[\s\S]*?max-width: clamp\(380px, [\d.]+vw, 520px\)/);
+});
+
+test('the composition follows the path side by side', () => {
+  // O lado vem do mesmo offset que desenha o caminho.
+  assert.match(journeyLogoSource, /section\.dataset\.symbolSide/);
+  assert.match(homeStyles, /\[data-symbol-side='right'\]/);
+  assert.match(homeStyles, /\[data-symbol-side='left'\]/);
+  assert.match(homeStyles, /\[data-symbol-side='centre'\]/);
+
+  // Nenhuma grade reserva mais a faixa central: o simbolo saiu de la.
+  // As grades de conteudo nao reservam mais o centro; so a dobra 2 reserva
+  // uma trilha, e ela fica do lado onde o simbolo esta.
+  ['vant-method-steps', 'vant-business-units-grid', 'vant-growth-system-grid',
+   'vant-team-grid'].forEach((grade) => {
+    const regra = homeStyles.match(new RegExp(String.raw`\.` + grade + String.raw` \{[\s\S]*?[\r\n]\}`));
+    if (regra) assert.doesNotMatch(regra[0], /var\(--vant-reserved\)/, `${grade} nao deve reservar o centro`);
   });
 });
 
-test('the centre reserves a visual column plus breathing room', () => {
-  // Coluna visual entre 260px e 400px.
-  // Varias declaracoes de --vant-band existem (a dobra 2 tem a sua).
-  // Nenhuma pode passar de 400px, e a principal fica entre 260 e 400.
-  const bandas = [...homeStyles.matchAll(/--vant-band: clamp\((\d+)px, [\d.]+vw, (\d+)px\)/g)]
-    .map((m) => [Number(m[1]), Number(m[2])]);
-  assert.ok(bandas.length > 0, 'a coluna central deve ter largura propria');
-  bandas.forEach(([, max]) => assert.ok(max <= 400, `coluna nao pode passar de 400px, veio ${max}`));
-  assert.ok(bandas.some(([min, max]) => min >= 260 && max <= 400), 'falta a coluna principal entre 260 e 400px');
-
-  // A trilha das grades reserva coluna + folga dos dois lados.
-  assert.match(homeStyles, /--vant-reserved: calc\(var\(--vant-band\) \+ var\(--vant-gutter\) \* 2\)/);
-  assert.match(homeStyles, /--vant-side: calc\(\(100% - var\(--vant-reserved\)\) \/ 2\)/);
-
-  // Laterais com minmax(0, 1fr) para nao cortar nem transbordar.
-  assert.match(homeStyles, /\.vant-hero-stage \{[\s\S]*?minmax\(0, 1fr\)/);
-  // Texto corrido entre 38 e 48 caracteres.
-  assert.match(homeStyles, /max-width: min\(4[0-8]ch, 100%\)/);
-  // Titulos com clamp para caberem na altura util.
-  assert.match(homeStyles, /\.vant-presentation-section h2 \{ font-size: clamp\(/);
+test('reduced motion shows the whole composition, static', () => {
+  assert.match(journeyLogoSource, /prefers-reduced-motion: reduce/);
+  // Caminho inteiro desenhado, sem animar.
+  assert.match(journeyLogoSource, /setProperty\('--path-progress', '1'\)/);
+  const blocks = homeStyles.split('@media (prefers-reduced-motion: reduce) {').slice(1);
+  const block = blocks.find((b) => b.includes('vant-journey-symbol-solid'));
+  assert.ok(block, 'falta o bloco de movimento reduzido da jornada');
+  assert.match(block, /transform: none !important/);
+  assert.match(block, /opacity: 1 !important/);
 });
 
-test('the second fold is an editorial three-area composition', () => {
-  // Tres areas, 100svh e nenhum marcador 01-08.
-  assert.match(homePageSource, /vant-fold--composed/);
-  assert.match(homePageSource, /vant-fold-lead/);
-  assert.match(homePageSource, /vant-fold-centre/);
-  assert.match(homePageSource, /vant-fold-support/);
-  assert.doesNotMatch(homePageSource, /vant-systems-flow|systemsFlow/);
-  assert.match(homeStyles, /\.vant-fold--composed \{[\s\S]*?min-height: 100svh/);
-  assert.match(homeStyles, /\.vant-fold-stage \{[\s\S]*?minmax\(0, 1\.15fr\) var\(--vant-reserved\) minmax\(0, 1\.3fr\)/);
-
-  // Eyebrow acima do titulo, na esquerda; apoio na direita.
-  assert.ok(homePageSource.indexOf("data-reveal=\"eyebrow\"") < homePageSource.indexOf('id="systemic-vision-title"'));
-  assert.match(homeStyles, /\.vant-fold-support p \{[\s\S]*?max-width: min\(4[0-5]ch, 100%\)/);
-
-  // A coluna central desta dobra e menor, e --vant-reserved e redeclarado:
-  // calc() em custom property resolve no elemento que a define.
-  assert.match(homeStyles, /\.vant-fold--composed \{[\s\S]*?--vant-reserved: calc\(var\(--vant-band\) \+ var\(--vant-gutter\) \* 2\)/);
-});
-
-test('the central line became an extruded 3D beam', () => {
-  assert.match(journeyLogoSource, /BEAM_LAYERS = \d+/);
-  assert.match(journeyLogoSource, /vant-journey-beam-side/);
-  assert.match(journeyLogoSource, /vant-journey-beam-face/);
-  assert.match(journeyLogoSource, /vant-journey-beam-edge/);
-  assert.match(journeyLogoSource, /vant-journey-beam-shadow/);
-
-  assert.match(homeStyles, /\.vant-journey-line \{[\s\S]*?perspective:/);
-  assert.match(homeStyles, /\.vant-journey-beam \{[\s\S]*?transform-style: preserve-3d/);
-  assert.match(homeStyles, /\.vant-journey-beam-side \{[\s\S]*?translateZ/);
-
-  // Oscilacao lenta entre 8 e 14 graus, nunca 360.
-  const sway = homeStyles.match(/@keyframes vant-beam-sway \{[\s\S]*?[\r\n]\}/);
-  assert.ok(sway, 'falta a oscilacao da haste');
-  const angulos = [...sway[0].matchAll(/rotate[YZ]\((-?[\d.]+)deg\)/g)].map((m) => Math.abs(Number(m[1])));
-  assert.ok(Math.max(...angulos) <= 14, `oscilacao deve ficar ate 14 graus, veio ${Math.max(...angulos)}`);
-  assert.doesNotMatch(sway[0], /360deg/);
-});
-
-test('entering a section ignites the beam, then the logo, then the text', () => {
-  // Uma vez por secao: o Set impede repetir na mesma visita.
-  assert.match(journeyLogoSource, /const ignited = new Set\(\)/);
-  assert.match(journeyLogoSource, /ignited\.has\(index\)/);
-  assert.match(journeyLogoSource, /data-igniting|igniting/);
-
-  // Haste acende, logo se aproxima com atraso, texto de apoio por ultimo.
-  assert.match(homeStyles, /@keyframes vant-beam-ignite/);
-  assert.match(homeStyles, /\[data-igniting='true'\] \.vant-journey-enter \{[\s\S]*?vant-journey-approach/);
-  assert.match(homeStyles, /@keyframes vant-journey-approach/);
-  assert.match(homeStyles, /\[data-reveal='support'\] \{ transition-delay: (\d+)ms/);
-
-  const apoio = Number(homeStyles.match(/\[data-reveal='support'\] \{ transition-delay: (\d+)ms/)[1]);
-  const titulo = Number(homeStyles.match(/\[data-reveal='title'\]\s*\{ transition-delay: (\d+)ms/)[1]);
-  assert.ok(apoio > titulo, 'o apoio deve entrar depois do titulo');
+test('the journey cleans up its listeners and observers', () => {
+  assert.match(journeyLogoSource, /cancelAnimationFrame\(frame\)/);
+  assert.match(journeyLogoSource, /observer\.disconnect\(\)/);
+  ['pointermove', 'scroll', 'resize'].forEach((evento) => {
+    // Parenteses precisam ser escapados na RegExp montada por string.
+    assert.match(journeyLogoSource, new RegExp(String.raw`removeEventListener\('` + evento), `falta remover ${evento}`);
+  });
+  assert.match(journeyLogoSource, /\{ passive: true \}/);
 });

@@ -1882,374 +1882,6 @@ html {
 /*
 */
 
-/* ---------- haste central 3D ---------- */
-
-.vant-journey-line {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  z-index: 2;
-  width: 72px;
-  margin-left: -36px;
-  perspective: 900px;
-  perspective-origin: 50% 46%;
-  pointer-events: none;
-}
-
-/*
-  Oscilacao lenta em Y e Z, entre 8 e 14 graus. Nunca 360: o objetivo e
-  revelar a espessura, nao girar como um loading.
-*/
-.vant-journey-beam {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  animation: vant-beam-sway 17s ease-in-out infinite alternate;
-}
-
-/* Laterais extrudadas: verde-escuro quase preto, recuando no eixo Z. */
-.vant-journey-beam-side {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 7px;
-  margin-left: -3.5px;
-  background: rgb(12 22 1);
-  transform: translateZ(calc(var(--layer) * -3px)) scaleX(calc(1 - var(--layer) * .06));
-  mask-image: linear-gradient(180deg, transparent, #000 8%, #000 92%, transparent);
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 8%, #000 92%, transparent);
-}
-
-.vant-journey-beam-side:nth-child(1) { background: rgb(38 58 2); }
-.vant-journey-beam-side:nth-child(2) { background: rgb(26 40 1); }
-
-/* Face frontal verde-lima. */
-.vant-journey-beam-face {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 3px;
-  margin-left: -1.5px;
-  transform: translateZ(4px);
-  background: linear-gradient(180deg, transparent, rgba(155, 220, 0, .85) 8%, rgba(155, 220, 0, .85) 92%, transparent);
-}
-
-/* Brilho de borda ao longo da quina. */
-.vant-journey-beam-edge {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 9px;
-  margin-left: -4.5px;
-  transform: translateZ(5px);
-  background: linear-gradient(90deg, transparent, rgba(210, 255, 120, .5) 46%, transparent 54%);
-  filter: blur(2px);
-  mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
-}
-
-/* Sombra projetada sobre o grid, deslocada conforme a haste inclina. */
-.vant-journey-beam-shadow {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 26px;
-  margin-left: -6px;
-  background: linear-gradient(90deg, rgba(0, 0, 0, .8), transparent);
-  filter: blur(9px);
-  opacity: .8;
-  animation: vant-beam-shadow 17s ease-in-out infinite alternate;
-}
-
-/* Halo verde suave e contido. */
-.vant-journey-line-aura {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(60, 90, 4, .42) 44%, rgba(74, 108, 4, .5) 50%, rgba(60, 90, 4, .42) 56%, transparent);
-  mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
-}
-
-.vant-journey-line-progress {
-  position: absolute;
-  inset: 0 0 auto 50%;
-  width: 3px;
-  height: 100%;
-  margin-left: -1.5px;
-  transform-origin: 50% 0;
-  transform: translateZ(6px) scaleY(calc(.04 + var(--j-journey) * .96));
-  background: linear-gradient(180deg, rgba(120, 175, 0, .3), rgba(155, 220, 0, .95));
-  box-shadow: 0 0 16px rgba(155, 220, 0, .45);
-}
-
-.vant-journey-line-pulse {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 200px;
-  height: 300px;
-  margin: -150px 0 0 -100px;
-  background: radial-gradient(ellipse at center, rgba(155, 220, 0, .3), rgba(155, 220, 0, .08) 44%, transparent 72%);
-  filter: blur(16px);
-  transform: translate3d(0, calc(var(--j-journey) * 26vh), 0);
-  animation: vant-journey-pulse 3.2s ease-in-out infinite alternate;
-}
-
-@keyframes vant-beam-sway {
-  from { transform: rotateY(-12deg) rotateZ(-1.6deg); }
-  to   { transform: rotateY(11deg) rotateZ(1.4deg); }
-}
-
-@keyframes vant-beam-shadow {
-  from { transform: translateX(7px); opacity: .55; }
-  to   { transform: translateX(-7px); opacity: .85; }
-}
-
-@keyframes vant-journey-pulse {
-  from { opacity: .68; }
-  to   { opacity: 1; }
-}
-
-/* Acende ao entrar numa secao: a haste ganha luz e volta ao normal. */
-.vant-journey[data-igniting='true'] .vant-journey-beam-face,
-.vant-journey[data-igniting='true'] .vant-journey-beam-edge {
-  animation: vant-beam-ignite 1400ms ease-out;
-}
-
-@keyframes vant-beam-ignite {
-  0%   { opacity: .3; filter: brightness(1); }
-  35%  { opacity: 1; filter: brightness(1.8); }
-  100% { opacity: 1; filter: brightness(1); }
-}
-
-/* ---------- segunda dobra: composicao editorial ---------- */
-
-.vant-presentation-section.vant-fold--composed {
-  /*
-    Coluna central menor que a das demais secoes: aqui a composicao editorial
-    tem prioridade, e o texto precisa de largura para respirar.
-  */
-  --vant-band: clamp(220px, 20vw, 300px);
-  /* A logo e menor aqui, entao a folga tambem pode ser. */
-  --vant-gutter: 1.5rem;
-  /*
-    calc() em custom property resolve no elemento que a define: sem
-    redeclarar aqui, --vant-reserved continuaria com o valor herdado de
-    .vant-presentation e a coluna nao encolheria.
-  */
-  --vant-reserved: calc(var(--vant-band) + var(--vant-gutter) * 2);
-
-  display: grid;
-  align-content: center;
-  min-height: 100svh;
-}
-
-/* A logo acompanha a coluna menor desta dobra. */
-.vant-journey[data-zone='1'] { --j-scale: .45; }
-
-.vant-fold-stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) var(--vant-reserved) minmax(0, 1.3fr);
-  align-items: center;
-  gap: clamp(1.25rem, 2.6vw, 2.75rem);
-}
-
-.vant-fold-lead,
-.vant-fold-support { position: relative; z-index: 1; min-width: 0; }
-
-/* Titulo com linhas amplas, sem ficar estreito demais. */
-.vant-fold-lead h2 {
-  max-width: min(14ch, 100%);
-  margin-top: .9rem;
-  font-size: clamp(1.8rem, 2.8vw, 3.1rem);
-  line-height: 1.04;
-}
-
-/* Texto de apoio alinhado ao centro da logo, 38-45 caracteres por linha. */
-.vant-fold-support {
-  align-self: center;
-  padding-left: var(--vant-gutter);
-}
-
-.vant-fold-support p {
-  max-width: min(42ch, 100%);
-  margin: 0;
-  color: var(--vant-muted);
-  /* Corpo fixo: e o que mantem 38-45 caracteres na largura disponivel. */
-  font-size: 1rem;
-  line-height: 1.75;
-}
-
-.vant-fold-centre { width: var(--vant-reserved); height: 1px; }
-
-/* Ordem da revelacao: eyebrow, titulo, haste, logo e por fim o apoio. */
-[data-revealed='true'] [data-reveal='support'] { transition-delay: 520ms; }
-
-/* Menos largura disponivel: o apoio recebe mais peso para manter 38+ chars. */
-@media (max-width: 1180px) {
-  .vant-fold-stage { grid-template-columns: minmax(0, 1fr) var(--vant-reserved) minmax(0, 1.45fr); }
-}
-
-@media (max-width: 1023px) {
-  .vant-presentation-section.vant-fold--composed { min-height: auto; }
-  .vant-fold-stage { grid-template-columns: 1fr; }
-  .vant-fold-centre { display: none; }
-  .vant-fold-support { padding-left: 0; }
-  .vant-fold-lead h2 { max-width: 100%; }
-}
-
-/* ---------- rastro da logo ---------- */
-
-/* Energia curta deixada logo abaixo do ponto por onde ela passou. */
-.vant-journey-trail {
-  position: absolute;
-  top: 60%;
-  left: 50%;
-  width: 3px;
-  height: 44%;
-  margin-left: -1.5px;
-  background: linear-gradient(180deg, rgba(155, 220, 0, .55), transparent);
-  filter: blur(3px);
-  opacity: .9;
-  pointer-events: none;
-}
-
-
-/* ---------- corpo 3D ---------- */
-
-.vant-journey-halo {
-  position: absolute;
-  inset: -10%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(155, 220, 0, .15), rgba(155, 220, 0, .05) 46%, transparent 70%);
-  filter: blur(18px);
-  animation: vant-journey-halo 8s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-
-.vant-journey-shadow {
-  position: absolute;
-  inset: 6% -4% -10% 4%;
-  -webkit-mask: url("/assets/brand/vant-logo-official.png") center / contain no-repeat;
-  mask: url("/assets/brand/vant-logo-official.png") center / contain no-repeat;
-  background: rgb(0 0 0 / .82);
-  filter: blur(26px);
-  transform: translate3d(calc(var(--j-pointer-x) * -20px), calc(var(--j-pointer-y) * -12px), 0) scale(1.02);
-  opacity: .7;
-  pointer-events: none;
-}
-
-.vant-journey-enter,
-.vant-journey-parallax,
-.vant-journey-tilt,
-.vant-journey-float,
-.vant-journey-solid {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-}
-
-.vant-journey-enter {
-  animation: vant-journey-enter 2100ms cubic-bezier(.16, .84, .34, 1) both;
-  will-change: transform, opacity;
-}
-
-.vant-journey-parallax {
-  transform:
-    rotateY(calc(var(--j-pointer-x) * 10deg + var(--j-ry)))
-    rotateX(calc(var(--j-pointer-y) * -8deg + var(--j-rx)))
-    translateZ(calc(var(--j-flow) * 30px));
-}
-
-.vant-journey-tilt  { animation: vant-journey-tilt 15s ease-in-out infinite alternate; }
-.vant-journey-float { animation: vant-journey-float 10s ease-in-out infinite alternate; }
-
-.vant-journey-depth,
-.vant-journey-rim,
-.vant-journey-fill,
-.vant-journey-sheen {
-  position: absolute;
-  inset: 0;
-  -webkit-mask: url("/assets/brand/vant-logo-official.png") center / contain no-repeat;
-  mask: url("/assets/brand/vant-logo-official.png") center / contain no-repeat;
-  pointer-events: none;
-}
-
-/* Extrusao proporcional ao tamanho: estrutura grande, nao imagem ampliada. */
-.vant-journey-depth {
-  --t: calc(var(--layer) / var(--depth-count));
-  background: rgb(17 30 1);
-  transform:
-    translateZ(calc(var(--layer) * var(--j-depth-step) * -1))
-    scale(calc(1 - var(--t) * .016));
-}
-
-.vant-journey-depth:nth-child(-n + 3) { background: rgb(74 108 4); }
-.vant-journey-depth:nth-child(4),
-.vant-journey-depth:nth-child(5) { background: rgb(41 62 2); }
-
-.vant-journey-rim {
-  background: linear-gradient(200deg, rgba(210, 255, 120, .95), rgba(155, 220, 0, .55) 58%, rgba(120, 175, 0, .3));
-  transform: translateZ(1px) scale(1.022);
-}
-
-/* Face frontal: arte oficial intacta, sem mascara nem gradiente por cima. */
-.vant-journey-face {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transform: translateZ(5px);
-  filter: brightness(1.04) contrast(1.06);
-}
-
-.vant-journey-fill {
-  background: linear-gradient(0deg, rgba(155, 220, 0, .62), rgba(155, 220, 0, .16) 34%, transparent 62%);
-  mix-blend-mode: soft-light;
-  transform: translateZ(6px);
-  opacity: .9;
-}
-
-.vant-journey-sheen {
-  background: linear-gradient(
-    calc(128deg + var(--j-pointer-x) * 42deg),
-    rgba(255, 255, 255, .92),
-    rgba(255, 255, 255, .1) 38%,
-    transparent 56%
-  );
-  mix-blend-mode: screen;
-  transform: translateZ(7px);
-  opacity: .46;
-}
-
-@keyframes vant-journey-enter {
-  from { transform: translate3d(0, 38%, -320px) rotateY(0deg) scale(.6); opacity: 0; }
-  50%  { opacity: 1; }
-  to   { transform: translate3d(0, 0, 0) rotateY(360deg) scale(1); opacity: 1; }
-}
-
-@keyframes vant-journey-float {
-  from { transform: translate3d(0, -13px, 0) scale(.994); }
-  to   { transform: translate3d(0, 13px, 0) scale(1.01); }
-}
-
-@keyframes vant-journey-tilt {
-  from { transform: rotateX(6deg) rotateY(calc(-8deg + var(--tilt-bias-y, 0deg))); }
-  to   { transform: rotateX(-5deg) rotateY(calc(9deg + var(--tilt-bias-y, 0deg))); }
-}
-
-@keyframes vant-journey-halo {
-  from { opacity: .7; transform: scale(.96); }
-  to   { opacity: .95; transform: scale(1.04); }
-}
-
 /* ---------- composicao da primeira dobra ---------- */
 
 .vant-presentation-hero.vant-hero--composed {
@@ -2394,37 +2026,31 @@ html {
   metade direita e posicionado explicitamente; os seguintes acompanham.
 */
 .vant-systems-flow {
-  grid-template-columns:
-    repeat(4, calc(var(--vant-side) / 4)) var(--vant-reserved) repeat(4, calc(var(--vant-side) / 4));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
 }
 .vant-systems-flow > li:nth-child(5) { grid-column: 6; }
 
 .vant-method-steps {
-  grid-template-columns:
-    repeat(3, calc(var(--vant-side) / 3)) var(--vant-reserved) repeat(2, calc(var(--vant-side) / 2));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 .vant-method-steps > li:nth-child(4) { grid-column: 5; }
 
 .vant-business-units-grid {
-  grid-template-columns: minmax(0, 1fr) var(--vant-reserved) minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.vant-business-units-grid > :nth-child(2) { grid-column: 3; }
 
 .vant-growth-system-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) var(--vant-reserved) repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
-.vant-growth-system-grid > :nth-child(3) { grid-column: 4; }
 
 .vant-team-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) var(--vant-reserved) repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
-.vant-team-grid > :nth-child(3) { grid-column: 4; }
 
 /* Tabela de squads: situacao a esquerda, competencias e composicao a direita. */
 .vant-squads-table-head,
 .vant-squads-table-row {
-  grid-template-columns:
-    var(--vant-side) var(--vant-reserved) calc(var(--vant-side) / 2) calc(var(--vant-side) / 2);
+  grid-template-columns: 1.1fr 1fr 1fr;
 }
 .vant-squads-table-head > span:nth-child(2),
 .vant-squads-table-row > p:nth-child(2) { grid-column: 3; }
@@ -2656,4 +2282,464 @@ html {
   .vant-journey-beam-face { width: 1px; margin-left: -.5px; transform: none; }
   .vant-journey-line-progress { width: 1px; margin-left: -.5px; box-shadow: none; transform: scaleY(calc(.04 + var(--j-journey) * .96)); }
   .vant-journey-line-aura { opacity: .5; }
+}
+/* ============================================================
+   Jornada: caminho SVG continuo + simbolo por secao
+   Ordem de profundidade: fundo < grid < glow < linha < simbolo < textos
+   ============================================================ */
+
+.vant-journey {
+  position: absolute;
+  inset: 0;
+  /*
+    Acima do fundo das secoes (que vem depois no DOM e tem background
+    proprio) e abaixo do conteudo, que fica em z-index 3.
+  */
+  z-index: 1;
+  pointer-events: none;
 }
+
+.vant-journey-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  overflow: visible;
+}
+
+/* Trecho ainda nao percorrido: presente, porem discreto. */
+.vant-journey-track {
+  stroke: rgba(46, 70, 3, .55);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* 1) glow externo desfocado */
+.vant-journey-glow {
+  stroke: rgba(155, 220, 0, .3);
+  stroke-width: 16;
+  stroke-linecap: round;
+  filter: blur(9px);
+}
+
+/* 2) traco principal, com mais espessura que a linha antiga */
+.vant-journey-stroke {
+  stroke: rgba(120, 175, 0, .9);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+/* 3) nucleo fino e claro */
+.vant-journey-core {
+  stroke: rgba(226, 255, 150, .95);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+/* Pulso lento percorrendo o caminho, como corrente de energia. */
+.vant-journey-pulse {
+  stroke: rgba(226, 255, 150, .85);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 90 2400;
+  filter: blur(1.5px);
+  animation: vant-path-pulse 9s linear infinite;
+}
+
+@keyframes vant-path-pulse {
+  from { stroke-dashoffset: 2490; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ---------- simbolo por secao ---------- */
+
+.vant-journey-symbol {
+  --symbol-size: clamp(150px, 17vw, 280px);
+  --spin: 0deg;
+  --focus: 0;
+
+  position: absolute;
+  top: var(--symbol-y);
+  left: var(--symbol-x);
+  z-index: 2;
+  width: var(--symbol-size);
+  height: var(--symbol-size);
+  margin: calc(var(--symbol-size) / -2) 0 0 calc(var(--symbol-size) / -2);
+  perspective: 1000px;
+  pointer-events: none;
+}
+
+.vant-journey-symbol-solid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* Rotacao ligada ao scroll + leve inclinacao 3D + foco ao centrar. */
+  transform:
+    rotateZ(var(--spin))
+    rotateY(calc(var(--pointer-x, 0) * 9deg + var(--spin) * .06))
+    rotateX(calc(var(--pointer-y, 0) * -7deg))
+    scale(calc(1 + var(--focus) * .06));
+  will-change: transform;
+}
+
+/* Brilho verde acompanha o foco: mais intenso quando a linha alcanca. */
+.vant-journey-symbol-halo {
+  position: absolute;
+  inset: -16%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(155, 220, 0, .26), rgba(155, 220, 0, .07) 46%, transparent 72%);
+  filter: blur(18px);
+  opacity: calc(.34 + var(--focus) * .55);
+}
+
+/* Sombra projetada: reforca que o simbolo esta acima do fundo. */
+.vant-journey-symbol-shadow {
+  position: absolute;
+  inset: 8% -5% -9% 5%;
+  -webkit-mask: url("/assets/brand/vant-logo-official.png") center / contain no-repeat;
+  mask: url("/assets/brand/vant-logo-official.png") center / contain no-repeat;
+  background: rgb(0 0 0 / .8);
+  filter: blur(20px);
+  opacity: .65;
+}
+
+.vant-journey-symbol-depth,
+.vant-journey-symbol-rim,
+.vant-journey-symbol-sheen {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: url("/assets/brand/vant-logo-official.png") center / contain no-repeat;
+  mask: url("/assets/brand/vant-logo-official.png") center / contain no-repeat;
+}
+
+.vant-journey-symbol-depth {
+  --t: calc(var(--layer) / var(--depth-count));
+  background: rgb(17 30 1);
+  transform: translateZ(calc(var(--layer) * -5px)) scale(calc(1 - var(--t) * .015));
+}
+
+.vant-journey-symbol-depth:nth-child(-n + 2) { background: rgb(64 94 3); }
+
+.vant-journey-symbol-rim {
+  background: linear-gradient(200deg, rgba(210, 255, 120, .9), rgba(155, 220, 0, .5) 58%, rgba(120, 175, 0, .28));
+  transform: translateZ(1px) scale(1.02);
+}
+
+.vant-journey-symbol-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: translateZ(5px);
+  filter: brightness(calc(1.02 + var(--focus) * .12)) contrast(1.05);
+}
+
+.vant-journey-symbol-sheen {
+  background: linear-gradient(calc(128deg + var(--pointer-x, 0) * 40deg), rgba(255, 255, 255, .9), rgba(255, 255, 255, .08) 38%, transparent 56%);
+  mix-blend-mode: screen;
+  transform: translateZ(6px);
+  opacity: .4;
+}
+
+/* ---------- composicao das dobras ---------- */
+
+.vant-presentation-section,
+.vant-presentation-hero { position: relative; }
+
+/* Conteudo sempre acima da linha e do simbolo. */
+.vant-presentation-section-copy,
+.vant-fold-lead,
+.vant-fold-support,
+.vant-hero-title-area,
+.vant-hero-support,
+.vant-method-steps,
+.vant-business-units-grid,
+.vant-business-units-note,
+.vant-growth-system-grid,
+.vant-squads-table,
+.vant-intermediate-cta,
+.vant-team-grid,
+.vant-final-diagnostic-content { position: relative; z-index: 3; }
+
+/* Todas as dobras da jornada ocupam a tela e respiram. */
+.vant-presentation-section {
+  display: grid;
+  align-content: center;
+  min-height: 100svh;
+}
+
+/* Textos maiores: titulos de 56 a 84px em telas grandes. */
+.vant-presentation-section h2 {
+  max-width: 100%;
+  font-size: clamp(2.2rem, 4.2vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+
+.vant-presentation-section-copy > p:last-child,
+.vant-fold-support p,
+.vant-business-units-note {
+  max-width: min(46ch, 520px);
+  font-size: clamp(1.05rem, 1.35vw, 1.375rem);
+  line-height: 1.62;
+}
+
+/*
+  Alternancia: o texto vai para o lado oposto ao simbolo daquela dobra, e a
+  largura minima evita colunas estreitas.
+*/
+.vant-presentation-section:nth-of-type(odd) .vant-presentation-section-copy { margin-right: auto; }
+.vant-presentation-section:nth-of-type(even) .vant-presentation-section-copy { margin-left: auto; }
+
+.vant-presentation-section-copy { max-width: min(54ch, 640px); }
+
+/* ---------- entrada dos textos ---------- */
+
+.vant-presentation-hero [data-reveal],
+.vant-presentation-section [data-reveal] {
+  opacity: 0;
+  transform: translate3d(var(--reveal-shift, -22px), 30px, 0);
+  filter: blur(6px);
+}
+
+.vant-presentation-section:nth-of-type(even) [data-reveal] { --reveal-shift: 22px; }
+
+.vant-presentation-hero[data-revealed='true'] [data-reveal],
+.vant-presentation-section[data-revealed='true'] [data-reveal] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition:
+    opacity 700ms cubic-bezier(.22, .61, .36, 1),
+    transform 700ms cubic-bezier(.22, .61, .36, 1),
+    filter 700ms cubic-bezier(.22, .61, .36, 1);
+}
+
+/* ---------- responsivo ---------- */
+
+@media (max-width: 1023px) {
+  .vant-journey-symbol { --symbol-size: clamp(110px, 30vw, 180px); }
+  .vant-journey-glow { stroke-width: 10; filter: blur(6px); }
+  .vant-journey-stroke { stroke-width: 4; }
+
+  .vant-presentation-section {
+    min-height: 100svh;
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .vant-presentation-section h2 { max-width: 100%; font-size: clamp(2.25rem, 7vw, 3.25rem); }
+  .vant-presentation-section-copy,
+  .vant-presentation-section-copy > p:last-child,
+  .vant-fold-support p,
+  .vant-business-units-note { max-width: 100%; font-size: clamp(1rem, 4vw, 1.125rem); }
+
+  .vant-presentation-section:nth-of-type(even) .vant-presentation-section-copy { margin-left: 0; }
+}
+
+/* ---------- movimento reduzido ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .vant-journey-pulse { animation: none; opacity: .5; }
+  .vant-journey-symbol-solid { transform: none !important; }
+  .vant-presentation-hero [data-reveal],
+  .vant-presentation-section [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
+/* ---------- segunda dobra: composicao editorial ---------- */
+
+.vant-presentation-section.vant-fold--composed {
+  display: grid;
+  align-content: center;
+  min-height: 100svh;
+}
+
+.vant-fold-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--vant-reserved) minmax(0, .9fr);
+  align-items: center;
+  gap: clamp(1.25rem, 2.6vw, 2.75rem);
+}
+
+.vant-fold-lead,
+.vant-fold-support { position: relative; z-index: 1; min-width: 0; }
+
+/* Titulo com linhas amplas, sem ficar estreito demais. */
+.vant-fold-lead h2 {
+  max-width: min(15ch, 100%);
+  margin-top: .9rem;
+  font-size: clamp(2rem, 3.2vw, 3.6rem);
+  line-height: 1.02;
+}
+
+/* Texto de apoio alinhado ao centro da logo, 38-45 caracteres por linha. */
+.vant-fold-support {
+  align-self: center;
+  padding-left: var(--vant-gutter);
+}
+
+.vant-fold-support p {
+  max-width: min(42ch, 100%);
+  margin: 0;
+  color: var(--vant-muted);
+  font-size: clamp(.98rem, 1.2vw, 1.1rem);
+  line-height: 1.75;
+}
+
+.vant-fold-centre { width: var(--vant-reserved); height: 1px; }
+
+/* Ordem da revelacao: eyebrow, titulo, haste, logo e por fim o apoio. */
+[data-revealed='true'] [data-reveal='support'] { transition-delay: 520ms; }
+
+@media (max-width: 1023px) {
+  .vant-presentation-section.vant-fold--composed { min-height: auto; }
+  .vant-fold-stage { grid-template-columns: 1fr; }
+  .vant-fold-centre { display: none; }
+  .vant-fold-support { padding-left: 0; }
+  .vant-fold-lead h2 { max-width: 100%; }
+}
+
+/* ---------- composicao segue o trajeto da linha ---------- */
+
+/*
+  O simbolo muda de lado a cada dobra; o conteudo ocupa o lado oposto. A
+  reserva e feita por padding, nao por coluna fixa, para o texto nunca cair
+  em coluna estreita.
+*/
+.vant-presentation-section[data-symbol-side='right'] .vant-presentation-section-copy,
+.vant-presentation-section[data-symbol-side='right'] .vant-business-units-note {
+  margin-right: auto;
+  margin-left: 0;
+  max-width: min(58ch, 56%);
+}
+
+.vant-presentation-section[data-symbol-side='left'] .vant-presentation-section-copy,
+.vant-presentation-section[data-symbol-side='left'] .vant-business-units-note {
+  margin-left: auto;
+  margin-right: 0;
+  max-width: min(58ch, 56%);
+}
+
+/* Dobra central: composicao mais simetrica, com o simbolo ao meio. */
+.vant-presentation-section[data-symbol-side='centre'] .vant-presentation-section-copy {
+  margin-inline: auto;
+  text-align: center;
+  max-width: min(46ch, 720px);
+}
+
+/* Segunda dobra: titulo a esquerda, apoio proximo ao centro, simbolo a direita. */
+.vant-fold--composed[data-symbol-side='right'] .vant-fold-stage {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr) var(--vant-reserved);
+}
+
+.vant-fold--composed[data-symbol-side='left'] .vant-fold-stage {
+  grid-template-columns: var(--vant-reserved) minmax(0, .95fr) minmax(0, 1.05fr);
+}
+
+.vant-fold--composed[data-symbol-side='right'] .vant-fold-centre { order: 3; }
+.vant-fold--composed[data-symbol-side='left'] .vant-fold-lead { order: 2; }
+.vant-fold--composed[data-symbol-side='left'] .vant-fold-support { order: 3; }
+
+/* Apoio com largura de leitura confortavel: 380px a 520px. */
+.vant-fold-support p {
+  max-width: clamp(380px, 32vw, 520px);
+  font-size: clamp(1.05rem, 1.3vw, 1.375rem);
+  line-height: 1.62;
+}
+
+@media (max-width: 1023px) {
+  .vant-presentation-section[data-symbol-side='right'] .vant-presentation-section-copy,
+  .vant-presentation-section[data-symbol-side='left'] .vant-presentation-section-copy,
+  .vant-presentation-section[data-symbol-side='right'] .vant-business-units-note,
+  .vant-presentation-section[data-symbol-side='left'] .vant-business-units-note {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+  .vant-presentation-section[data-symbol-side='centre'] .vant-presentation-section-copy { text-align: left; }
+  .vant-fold--composed[data-symbol-side='right'] .vant-fold-stage,
+  .vant-fold--composed[data-symbol-side='left'] .vant-fold-stage { grid-template-columns: 1fr; }
+  .vant-fold-support p { max-width: 100%; }
+}
+
+/* As grades tambem ficam do lado oposto ao simbolo, sem colunas estreitas. */
+.vant-presentation-section[data-symbol-side='right'] .vant-method-steps,
+.vant-presentation-section[data-symbol-side='right'] .vant-business-units-grid,
+.vant-presentation-section[data-symbol-side='right'] .vant-growth-system-grid,
+.vant-presentation-section[data-symbol-side='right'] .vant-squads-table,
+.vant-presentation-section[data-symbol-side='right'] .vant-team-grid {
+  max-width: 62%;
+  margin-right: auto;
+}
+
+.vant-presentation-section[data-symbol-side='left'] .vant-method-steps,
+.vant-presentation-section[data-symbol-side='left'] .vant-business-units-grid,
+.vant-presentation-section[data-symbol-side='left'] .vant-growth-system-grid,
+.vant-presentation-section[data-symbol-side='left'] .vant-squads-table,
+.vant-presentation-section[data-symbol-side='left'] .vant-team-grid {
+  max-width: 62%;
+  margin-left: auto;
+}
+
+@media (max-width: 1023px) {
+  .vant-presentation-section[data-symbol-side='right'] .vant-method-steps,
+  .vant-presentation-section[data-symbol-side='right'] .vant-business-units-grid,
+  .vant-presentation-section[data-symbol-side='right'] .vant-growth-system-grid,
+  .vant-presentation-section[data-symbol-side='right'] .vant-squads-table,
+  .vant-presentation-section[data-symbol-side='right'] .vant-team-grid,
+  .vant-presentation-section[data-symbol-side='left'] .vant-method-steps,
+  .vant-presentation-section[data-symbol-side='left'] .vant-business-units-grid,
+  .vant-presentation-section[data-symbol-side='left'] .vant-growth-system-grid,
+  .vant-presentation-section[data-symbol-side='left'] .vant-squads-table,
+  .vant-presentation-section[data-symbol-side='left'] .vant-team-grid { max-width: 100%; margin-inline: 0; }
+
+  .vant-presentation-section[data-symbol-side='right'] .vant-presentation-section-copy,
+  .vant-presentation-section[data-symbol-side='left'] .vant-presentation-section-copy { max-width: 100%; }
+}
+
+/* Telas intermediarias: mais largura para o conteudo e menos colunas.
+   Limite inferior para nao vencer a cascata mobile, que vem antes. */
+@media (min-width: 641px) and (max-width: 1280px) {
+  .vant-presentation-section[data-symbol-side='right'] .vant-method-steps,
+  .vant-presentation-section[data-symbol-side='right'] .vant-business-units-grid,
+  .vant-presentation-section[data-symbol-side='right'] .vant-growth-system-grid,
+  .vant-presentation-section[data-symbol-side='right'] .vant-squads-table,
+  .vant-presentation-section[data-symbol-side='right'] .vant-team-grid,
+  .vant-presentation-section[data-symbol-side='left'] .vant-method-steps,
+  .vant-presentation-section[data-symbol-side='left'] .vant-business-units-grid,
+  .vant-presentation-section[data-symbol-side='left'] .vant-growth-system-grid,
+  .vant-presentation-section[data-symbol-side='left'] .vant-squads-table,
+  .vant-presentation-section[data-symbol-side='left'] .vant-team-grid { max-width: 80%; }
+
+  .vant-presentation-section[data-symbol-side='right'] .vant-presentation-section-copy,
+  .vant-presentation-section[data-symbol-side='left'] .vant-presentation-section-copy { max-width: min(58ch, 72%); }
+
+  .vant-method-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .vant-growth-system-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vant-team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Telas muito estreitas: coluna unica e nada ultrapassa o padding da secao. */
+@media (max-width: 640px) {
+  .vant-presentation-section {
+    padding-left: max(1.35rem, env(safe-area-inset-left));
+    padding-right: max(1.35rem, env(safe-area-inset-right));
+  }
+  .vant-business-units-grid,
+  .vant-method-steps,
+  .vant-growth-system-grid,
+  .vant-team-grid { grid-template-columns: 1fr; }
+  .vant-presentation-section :is(p, h1, h2, h3, li, article) { max-width: 100%; min-width: 0; }
+}
+
+/*
+  A secao virou grid: itens de grid tem min-width: auto e podem estourar o
+  container quando o conteudo nao cabe. Zerar e o que evita corte e overflow.
+*/
+.vant-presentation-section > *,
+.vant-presentation-hero > * { min-width: 0; }

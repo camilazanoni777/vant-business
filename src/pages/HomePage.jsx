@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import VantLogo from '../components/VantLogo.jsx';
-import JourneyLogo from '../components/JourneyLogo.jsx';
+import JourneyPath from '../components/JourneyPath.jsx';
 import TeamCard from '../components/ui/TeamCard.jsx';
 import {
   ecosystemNodes,
@@ -256,7 +256,7 @@ function HomePage() {
 
   return (
     <div className="vant-presentation">
-      <JourneyLogo />
+      <JourneyPath />
       <HeroSection />
       <SystemicVisionSection />
       <WorkMethodSection />

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { systemsFlow } from '../data/vantPresentation.js';
 
 const LOGO_SOURCE = '/assets/brand/vant-logo-official.png';
+// Parede de extrusao atras da face. Poucas camadas com passo maior custam
+// muito menos a compor do que muitas camadas finas, com a mesma espessura.
 const DEPTH_LAYERS = 8;
 
-// Um unico objeto percorre a pagina. Cada zona corresponde a uma secao e
-// define posicao, escala, angulos e opacidade; o CSS interpola entre elas.
+// Uma estacao por secao da jornada.
 const TOTAL_ZONES = 8;
 
 function JourneyLogo() {
@@ -44,6 +46,23 @@ function JourneyLogo() {
     let journey = 0;
     let targetJourney = 0;
     let currentZone = 0;
+    let pushTimer = 0;
+
+    // Cada estacao acompanha o centro da sua secao, entao a logo passa por
+    // elas de verdade conforme a pagina rola.
+    function placeStations() {
+      if (!presentation) return;
+      const base = presentation.getBoundingClientRect().top + window.scrollY;
+      sections.forEach((section, index) => {
+        const station = root.querySelector(`[data-station-index="${index}"]`);
+        if (!station) return;
+        const rect = section.getBoundingClientRect();
+        // 30% da altura: a estacao fica acima da logo quando a secao esta centrada.
+        const centre = rect.top + window.scrollY - base + rect.height * 0.3;
+        station.style.setProperty('--station-top', `${Math.round(centre)}px`);
+        station.dataset.docTop = String(Math.round(centre));
+      });
+    }
 
     function measure() {
       const viewport = window.innerHeight || 1;
@@ -56,8 +75,7 @@ function JourneyLogo() {
       // Secao ativa: a que contem o meio da viewport.
       let index = 0;
       sections.forEach((section, i) => {
-        const top = section.offsetTop;
-        if (middle >= top) {
+        if (middle >= section.offsetTop) {
           index = i;
         }
       });
@@ -68,19 +86,35 @@ function JourneyLogo() {
         targetFlow = Math.max(0, Math.min(1, local));
       }
 
+      // O rotulo nao pode ficar sob a face da logo: apaga quando ela se aproxima.
+      const presTop = presentation ? presentation.getBoundingClientRect().top + window.scrollY : 0;
+      const logoY = viewport / 2 + targetJourney * viewport * 0.26;
+      root.querySelectorAll('.vant-journey-station').forEach((station) => {
+        const docTop = Number(station.dataset.docTop || 0);
+        const stationY = docTop + presTop - window.scrollY;
+        station.dataset.near = Math.abs(stationY - logoY) < viewport * 0.22 ? 'true' : 'false';
+      });
+
       if (index !== currentZone) {
         currentZone = index;
         setZone(index);
+
+        // Aproximacao de camera curta ao entrar na secao, com retorno suave.
+        root.style.setProperty('--j-push', '1.055');
+        window.clearTimeout(pushTimer);
+        pushTimer = window.setTimeout(() => {
+          root.style.setProperty('--j-push', '1');
+        }, 620);
       }
     }
 
-    // Deslocamento continuo dentro da secao + parallax, tudo por variavel CSS.
+    // Inercia: a logo persegue o alvo em vez de saltar ate ele.
     function render() {
       pointerX += (targetX - pointerX) * 0.06;
       pointerY += (targetY - pointerY) * 0.06;
       flow += (targetFlow - flow) * 0.09;
       page += (targetPage - page) * 0.12;
-      journey += (targetJourney - journey) * 0.1;
+      journey += (targetJourney - journey) * 0.07;
 
       root.style.setProperty('--j-pointer-x', pointerX.toFixed(4));
       root.style.setProperty('--j-pointer-y', pointerY.toFixed(4));
@@ -98,40 +132,74 @@ function JourneyLogo() {
       targetY = Math.max(-1, Math.min(1, (event.clientY - halfHeight) / halfHeight));
     }
 
+    function handleResize() {
+      placeStations();
+      measure();
+    }
+
     if (hasFinePointer) {
       window.addEventListener('pointermove', handlePointerMove, { passive: true });
     }
     window.addEventListener('scroll', measure, { passive: true });
-    window.addEventListener('resize', measure, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
+    placeStations();
     measure();
     frame = requestAnimationFrame(render);
 
     return () => {
       cancelAnimationFrame(frame);
+      window.clearTimeout(pushTimer);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('scroll', measure);
-      window.removeEventListener('resize', measure);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  const activeZone = Math.min(zone, TOTAL_ZONES - 1);
 
   return (
     <div
       className="vant-journey"
       ref={rootRef}
       aria-hidden="true"
-      data-zone={Math.min(zone, TOTAL_ZONES - 1)}
+      data-zone={activeZone}
       data-reduced={isReduced ? 'true' : 'false'}
     >
-      {/* Esteira: trilho industrial por onde o objeto desce. */}
-      <div className="vant-journey-rail">
-        <span className="vant-journey-rail-line" />
+      {/* Coluna: trilho industrial, rota de dados e estrutura de crescimento. */}
+      <div className="vant-journey-column">
+        <span className="vant-journey-column-grid" />
+        <span className="vant-journey-column-edge vant-journey-column-edge--left" />
+        <span className="vant-journey-column-edge vant-journey-column-edge--right" />
+        <span className="vant-journey-core" />
         {/* Trecho ja percorrido: cresce do topo conforme o scroll avanca. */}
-        <span className="vant-journey-rail-progress" />
-        <span className="vant-journey-rail-ticks" />
-        <span className="vant-journey-rail-glow" />
+        <span className="vant-journey-core-progress" />
+        <span className="vant-journey-particles" />
+        <span className="vant-journey-pulse" />
       </div>
 
+      {/* Estacoes ancoradas ao centro de cada secao. */}
+      <ol className="vant-journey-stations">
+        {systemsFlow.map((name, index) => (
+          <li
+            key={name}
+            className="vant-journey-station"
+            data-station-index={index}
+            data-state={index < activeZone ? 'done' : index === activeZone ? 'current' : 'ahead'}
+            data-side={index % 2 === 0 ? 'left' : 'right'}
+          >
+            <span className="vant-journey-station-connector" />
+            <span className="vant-journey-station-node" />
+            <span className="vant-journey-station-label">
+              <b>{String(index + 1).padStart(2, '0')}</b>
+              {name}
+            </span>
+          </li>
+        ))}
+      </ol>
+
       <div className="vant-journey-object">
+        {/* Rastro curto: energia deixada no ponto por onde a logo passou. */}
+        <span className="vant-journey-trail" />
         <span className="vant-journey-halo" />
         <span className="vant-journey-shadow" />
         <div className="vant-journey-enter">

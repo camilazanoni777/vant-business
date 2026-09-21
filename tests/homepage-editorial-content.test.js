@@ -335,10 +335,10 @@ test('a single object travels the page along a rail', () => {
   }
 
   // Esteira com linha, marcadores e ponto de luz que acompanha o objeto.
-  assert.match(journeyLogoSource, /vant-journey-rail-line/);
-  assert.match(journeyLogoSource, /vant-journey-rail-ticks/);
-  assert.match(journeyLogoSource, /vant-journey-rail-glow/);
-  assert.match(homeStyles, /\.vant-journey-rail-glow \{[\s\S]*?var\(--j-flow\)/);
+  assert.match(journeyLogoSource, /vant-journey-column-edge/);
+  assert.match(journeyLogoSource, /vant-journey-particles/);
+  assert.match(journeyLogoSource, /vant-journey-pulse/);
+  assert.match(homeStyles, /\.vant-journey-pulse \{[\s\S]*?var\(--j-journey\)/);
 });
 
 test('the object only animates compositor-friendly properties', () => {
@@ -372,7 +372,7 @@ test('mobile keeps content off the object and simplifies the rail', () => {
   assert.match(homeStyles, /\.vant-hero-title-area \{ order: 2;/);
   assert.match(homeStyles, /\.vant-hero-support \{ order: 3;/);
   // Esteira simplificada.
-  assert.match(homeStyles, /\.vant-journey-rail-ticks \{ animation: none;/);
+  assert.match(homeStyles, /\.vant-journey-particles \{ animation: none;/);
 });
 
 test('reduced motion keeps the object static, monumental and rail-free', () => {
@@ -383,7 +383,7 @@ test('reduced motion keeps the object static, monumental and rail-free', () => {
   assert.match(block, /\.vant-journey-halo \{ animation: none !important; opacity: \.85/);
   // Sem viagem: o objeto fica preso a primeira dobra e a esteira some.
   assert.match(block, /\[data-reduced='true'\] \.vant-journey-object \{ position: absolute/);
-  assert.match(block, /\[data-reduced='true'\] \.vant-journey-rail \{ display: none/);
+  assert.match(block, /\[data-reduced='true'\] \.vant-journey-column,/);
   assert.match(journeyLogoSource, /prefers-reduced-motion: reduce/);
 });
 
@@ -397,7 +397,9 @@ test('the mobile menu is really hidden until it is opened', () => {
 test('the conducting object and the rail never leave the centre', () => {
   // Nenhuma zona desloca o objeto na horizontal.
   assert.doesNotMatch(homeStyles, /\.vant-journey\[data-zone='\d'\][^}]*--j-x/);
-  assert.doesNotMatch(journeyLogoSource, /data-side/);
+  // data-side pertence as estacoes (conector esq/dir), nunca a logo.
+  assert.doesNotMatch(homeStyles, /\.vant-journey\[data-side/);
+  assert.match(journeyLogoSource, /vant-journey-station"[\s\S]*?data-side/);
 
   // A descida vem do progresso do documento, nao de saltos por zona.
   assert.match(homeStyles, /\.vant-journey-object \{[\s\S]*?translate3d\(0, calc\(var\(--j-y\) \+ var\(--j-journey\) \* 26vh\), 0\)/);
@@ -405,10 +407,10 @@ test('the conducting object and the rail never leave the centre', () => {
   assert.match(journeyLogoSource, /scrollHeight - viewport/);
 
   // A esteira nao tem transform horizontal e acompanha a mesma descida.
-  const rail = homeStyles.match(/\.vant-journey-rail \{[\s\S]*?[\r\n]\}/);
+  const rail = homeStyles.match(/\.vant-journey-column \{[\s\S]*?[\r\n]\}/);
   assert.ok(rail);
   assert.doesNotMatch(rail[0], /transform:/);
-  assert.match(homeStyles, /\.vant-journey-rail-glow \{[\s\S]*?var\(--j-journey\)/);
+  assert.match(homeStyles, /\.vant-journey-pulse \{[\s\S]*?var\(--j-journey\)/);
 });
 
 test('every section reserves the central exclusion band', () => {
@@ -468,11 +470,11 @@ test('the journey layers stack above the page without capturing input', () => {
   const obj = homeStyles.match(/\.vant-journey-object \{[\s\S]*?[\r\n]\}/);
   assert.ok(obj);
   const objZ = Number(obj[0].match(/z-index: (\d+)/)[1]);
-  const rail = homeStyles.match(/\.vant-journey-rail \{[\s\S]*?[\r\n]\}/);
+  const rail = homeStyles.match(/\.vant-journey-column \{[\s\S]*?[\r\n]\}/);
   const railZ = Number(rail[0].match(/z-index: (\d+)/)[1]);
 
   assert.ok(objZ > railZ, 'a logo deve ficar acima da esteira');
-  assert.ok(railZ >= 2, 'a esteira deve ficar acima do grid e dos fundos');
+    assert.ok(railZ >= 2, 'a coluna deve ficar acima do grid e dos fundos');
   assert.ok(objZ < 50, 'o header (z-50) deve continuar acima da logo');
   assert.match(obj[0], /pointer-events: none/);
 
@@ -486,14 +488,14 @@ test('the journey layers stack above the page without capturing input', () => {
 
 test('the rail grows with the scroll and pulses with the object', () => {
   // Trecho percorrido cresce do topo para baixo.
-  const prog = homeStyles.match(/\.vant-journey-rail-progress \{[\s\S]*?[\r\n]\}/);
-  assert.ok(prog, 'falta o trecho percorrido da esteira');
+  const prog = homeStyles.match(/\.vant-journey-core-progress \{[\s\S]*?[\r\n]\}/);
+  assert.ok(prog, 'falta o trecho percorrido da coluna');
   assert.match(prog[0], /transform-origin: 50% 0/);
   assert.match(prog[0], /scaleY\(calc\(.*var\(--j-journey\)/);
-  assert.match(journeyLogoSource, /vant-journey-rail-progress/);
+  assert.match(journeyLogoSource, /vant-journey-core-progress/);
 
   // Pulso acompanha a logo na mesma descida.
-  const glow = homeStyles.match(/\.vant-journey-rail-glow \{[\s\S]*?[\r\n]\}/);
+  const glow = homeStyles.match(/\.vant-journey-pulse \{[\s\S]*?[\r\n]\}/);
   assert.match(glow[0], /var\(--j-journey\) \* 26vh/);
   assert.match(glow[0], /animation: vant-journey-pulse/);
 
@@ -511,4 +513,54 @@ test('each section shifts the perspective of the object', () => {
   });
   // Angulos diferentes entre secoes: revela outra face a cada uma.
   assert.ok(new Set(eixos).size > 1, 'as zonas devem variar a perspectiva');
+});
+
+test('the central column is a layered structure inside the band', () => {
+  // 180px a 260px, sempre dentro da faixa de exclusao.
+  const largura = homeStyles.match(/--j-column: clamp\((\d+)px, [\d.]+vw, (\d+)px\)/);
+  assert.ok(largura, 'a coluna deve ter largura propria');
+  assert.ok(Number(largura[1]) >= 180 && Number(largura[2]) <= 260,
+    `coluna deve ficar entre 180px e 260px, veio ${largura[1]}-${largura[2]}`);
+
+  // Camadas: grade interna, bordas estruturais, nucleo, progresso e particulas.
+  ['vant-journey-column-grid', 'vant-journey-column-edge', 'vant-journey-core',
+   'vant-journey-core-progress', 'vant-journey-particles'].forEach((camada) => {
+    assert.match(journeyLogoSource, new RegExp(camada), `falta a camada ${camada}`);
+    assert.match(homeStyles, new RegExp(String.raw`\.` + camada), `falta o estilo de ${camada}`);
+  });
+
+  // Rastro curto abaixo da logo.
+  assert.match(journeyLogoSource, /vant-journey-trail/);
+  assert.match(homeStyles, /\.vant-journey-trail \{/);
+});
+
+test('the 01-08 markers became stations along the column', () => {
+  // Os mesmos oito nomes, agora consumidos pela coluna e nao pelo rodape.
+  assert.match(journeyLogoSource, /import \{ systemsFlow \}/);
+  assert.doesNotMatch(homePageSource, /vant-systems-flow/);
+  assert.equal(systemsFlow.length, 8);
+
+  // Estados: concluida, atual e por vir; conectores alternando os lados.
+  assert.match(journeyLogoSource, /data-state=\{index < activeZone \? 'done' : index === activeZone \? 'current' : 'ahead'\}/);
+  assert.match(journeyLogoSource, /data-side=\{index % 2 === 0 \? 'left' : 'right'\}/);
+  assert.match(homeStyles, /\[data-state='done'\][\s\S]*?background: rgba\(92, 138, 6/);
+  assert.match(homeStyles, /\[data-state='current'\][\s\S]*?var\(--vant-accent\)/);
+  assert.match(homeStyles, /@keyframes vant-journey-station-pulse/);
+
+  // Ancoradas na secao correspondente, nao em posicao fixa de tela.
+  assert.match(journeyLogoSource, /--station-top/);
+  assert.match(homeStyles, /top: var\(--station-top/);
+});
+
+test('station labels never sit over the logo', () => {
+  // O rotulo apaga quando a logo se aproxima; o no permanece.
+  assert.match(journeyLogoSource, /station\.dataset\.near/);
+  assert.match(homeStyles, /\[data-near='true'\] \.vant-journey-station-label/);
+  assert.doesNotMatch(homeStyles, /\[data-near='true'\] \.vant-journey-station-node/);
+});
+
+test('the object eases into each section with a short camera push', () => {
+  assert.match(journeyLogoSource, /--j-push/);
+  assert.match(journeyLogoSource, /setTimeout/);
+  assert.match(homeStyles, /scale\(calc\(var\(--j-scale\) \* var\(--j-push, 1\)\)\)/);
 });

@@ -12,7 +12,6 @@ import {
   squads,
   studioBusiness,
   systemicVision,
-  systemsFlow,
   teamMembers,
 } from '../data/vantPresentation.js';
 
@@ -58,8 +57,6 @@ function HeroSection() {
         </div>
       </div>
 
-      <JourneyLogo />
-
       <EcosystemVisual />
     </section>
   );
@@ -73,14 +70,6 @@ function SystemicVisionSection() {
         <h2 id="systemic-vision-title" data-reveal="title">{systemicVision.title}</h2>
         <p>{systemicVision.description}</p>
       </div>
-      <ol className="vant-systems-flow" data-reveal="grid" aria-label="Fluxo de crescimento integrado">
-        {systemsFlow.map((step, index) => (
-          <li key={step}>
-            <span>{String(index + 1).padStart(2, '0')}</span>
-            {step}
-          </li>
-        ))}
-      </ol>
     </section>
   );
 }
@@ -255,6 +244,7 @@ function HomePage() {
 
   return (
     <div className="vant-presentation">
+      <JourneyLogo />
       <HeroSection />
       <SystemicVisionSection />
       <WorkMethodSection />

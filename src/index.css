@@ -1631,7 +1631,7 @@ html {
    Pagina de apresentacao VANT — base das secoes
    ============================================================ */
 
-.vant-presentation { display: grid; gap: clamp(1rem, 2vw, 1.5rem); margin: -1.5rem auto 0; color: var(--vant-text); }
+.vant-presentation { position: relative; display: grid; gap: clamp(1rem, 2vw, 1.5rem); margin: -1.5rem auto 0; color: var(--vant-text); }
 .vant-presentation-hero, .vant-presentation-section { position: relative; overflow: hidden; border: 1px solid var(--vant-line); background: linear-gradient(rgba(240,240,240,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(240,240,240,.025) 1px, transparent 1px), rgba(5,5,5,.9); background-size: 64px 64px, 64px 64px, auto; }
 .vant-presentation-hero { display: grid; min-height: clamp(570px, calc(100svh - 116px), 760px); grid-template-columns: minmax(0,.55fr) minmax(360px,.45fr); gap: clamp(2rem,5vw,5.5rem); align-items: center; padding: clamp(2rem,5vw,5rem); }
 .vant-presentation-hero::after { content: ''; position: absolute; inset: auto -8% -34% 42%; height: 70%; border: 1px solid rgba(155,220,0,.16); border-radius: 50%; box-shadow: 0 0 90px rgba(155,220,0,.06); pointer-events: none; }
@@ -1825,7 +1825,7 @@ html {
     /* translate(-50%,-50%) centraliza sem depender do tamanho. */
     translate(-50%, -50%)
     translate3d(0, calc(var(--j-y) + var(--j-journey) * 26vh), 0)
-    scale(var(--j-scale))
+    scale(calc(var(--j-scale) * var(--j-push, 1)))
     rotateZ(var(--j-rz));
   opacity: var(--j-opacity);
   transition:
@@ -1872,83 +1872,243 @@ html {
 /*
 */
 
-/* ---------- esteira ---------- */
+/* ---------- coluna central: trilho, rota de dados e estrutura ---------- */
 
-.vant-journey-rail {
+.vant-journey {
+  /* Largura da espinha dorsal. Cabe dentro da faixa de exclusao. */
+  --j-column: clamp(180px, 16vw, 260px);
+  --j-push: 1;
+}
+
+.vant-journey-column {
   position: fixed;
   top: 0;
   bottom: 0;
   left: 50%;
-  /* Acima do grid e dos fundos, abaixo da logo. */
   z-index: 2;
-  width: 2px;
-  margin-left: -1px;
-  /* A esteira nunca sai do centro. */
+  width: var(--j-column);
+  margin-left: calc(var(--j-column) / -2);
   pointer-events: none;
 }
 
-.vant-journey-rail-line {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent, rgba(60, 90, 4, .5) 12%, rgba(60, 90, 4, .5) 88%, transparent);
-}
-
-.vant-journey-rail-ticks {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(180deg, rgba(155, 220, 0, .5) 0 6px, transparent 6px 46px);
-  opacity: .3;
-  animation: vant-journey-flow 14s linear infinite;
-}
-
-/*
-  Trecho ja percorrido: cresce do topo para baixo conforme a pagina avanca e
-  permanece aceso em verde-escuro atras do pulso.
-*/
-.vant-journey-rail-progress {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 100%;
-  transform-origin: 50% 0;
-  transform: scaleY(calc(.06 + var(--j-journey) * .94));
-  background: linear-gradient(180deg, rgba(92, 138, 6, .9), rgba(92, 138, 6, .55));
-  box-shadow: 0 0 10px rgba(155, 220, 0, .25);
-}
-
-/* Particulas descendo pela estrutura, como energia em fluxo. */
-.vant-journey-rail-ticks {
+/* Grade tecnica interna, bem discreta. */
+.vant-journey-column-grid {
   position: absolute;
   inset: 0;
   background:
-    repeating-linear-gradient(180deg, rgba(155, 220, 0, .55) 0 5px, transparent 5px 44px),
-    repeating-linear-gradient(180deg, rgba(210, 255, 120, .35) 0 2px, transparent 2px 17px);
-  opacity: .42;
-  animation: vant-journey-flow 9s linear infinite;
+    repeating-linear-gradient(90deg, rgba(155, 220, 0, .05) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(180deg, rgba(240, 240, 240, .035) 0 1px, transparent 1px 34px);
+  mask-image: linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent);
 }
 
-/* Pulso verde-lima que acompanha a logo na descida. */
-.vant-journey-rail-glow {
+/* Duas linhas estruturais verde-escuras nas laterais. */
+.vant-journey-column-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(60, 90, 4, .75) 12%, rgba(60, 90, 4, .75) 88%, transparent);
+}
+
+.vant-journey-column-edge--left { left: 0; }
+.vant-journey-column-edge--right { right: 0; }
+
+/* Nucleo vertical verde-lima, sutil. */
+.vant-journey-core {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: linear-gradient(180deg, transparent, rgba(155, 220, 0, .22) 12%, rgba(155, 220, 0, .22) 88%, transparent);
+}
+
+/* Trecho ja percorrido: cresce do topo e fica aceso em verde-escuro. */
+.vant-journey-core-progress {
+  position: absolute;
+  inset: 0 0 auto 50%;
+  width: 2px;
+  height: 100%;
+  margin-left: -1px;
+  transform-origin: 50% 0;
+  transform: scaleY(calc(.05 + var(--j-journey) * .95));
+  background: linear-gradient(180deg, rgba(92, 138, 6, .95), rgba(120, 175, 0, .6));
+  box-shadow: 0 0 12px rgba(155, 220, 0, .3);
+}
+
+/* Poucas particulas, descendo como energia pela estrutura. */
+.vant-journey-particles {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(180deg, rgba(155, 220, 0, .5) 0 4px, transparent 4px 58px),
+    repeating-linear-gradient(180deg, rgba(210, 255, 120, .28) 0 2px, transparent 2px 23px);
+  background-position: 0 0, 0 0;
+  background-size: 1px 58px, 1px 23px;
+  background-repeat: repeat-y;
+  left: 50%;
+  width: 1px;
+  margin-left: -.5px;
+  opacity: .5;
+  animation: vant-journey-flow 11s linear infinite;
+}
+
+/* Luz que percorre a coluna junto com a logo. */
+.vant-journey-pulse {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 150px;
+  width: var(--j-column);
   height: 320px;
-  margin: -160px 0 0 -75px;
-  background: radial-gradient(ellipse at center, rgba(155, 220, 0, .42), rgba(155, 220, 0, .1) 44%, transparent 72%);
-  filter: blur(12px);
+  margin: -160px 0 0 calc(var(--j-column) / -2);
+  background: radial-gradient(ellipse at center, rgba(155, 220, 0, .26), rgba(155, 220, 0, .07) 46%, transparent 74%);
+  filter: blur(14px);
   transform: translate3d(0, calc(var(--j-journey) * 26vh), 0);
-  animation: vant-journey-pulse 2.8s ease-in-out infinite alternate;
+  animation: vant-journey-pulse 3.2s ease-in-out infinite alternate;
 }
 
 @keyframes vant-journey-pulse {
-  from { opacity: .72; }
+  from { opacity: .7; }
   to   { opacity: 1; }
 }
 
 @keyframes vant-journey-flow {
   from { background-position: 0 0, 0 0; }
-  to   { background-position: 0 49px, 0 19px; }
+  to   { background-position: 0 58px, 0 23px; }
 }
+
+/* ---------- estacoes da jornada ---------- */
+
+/*
+  Ancoradas ao centro de cada secao (--station-top vem do JS), entao rolam
+  com a pagina e a logo passa por elas de verdade.
+*/
+.vant-journey-stations {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 3;
+  width: var(--j-column);
+  margin: 0 0 0 calc(var(--j-column) / -2);
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.vant-journey-station {
+  position: absolute;
+  top: var(--station-top, 0);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  transform: translate(-50%, -50%);
+  transition: opacity 600ms ease;
+}
+
+.vant-journey-station[data-side='right'] { flex-direction: row-reverse; }
+
+/* No sobre o nucleo. */
+.vant-journey-station-node {
+  position: relative;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border: 1px solid rgba(92, 138, 6, .8);
+  border-radius: 50%;
+  background: var(--vant-bg, #050505);
+  transition: background 500ms ease, border-color 500ms ease, box-shadow 500ms ease;
+}
+
+/* Conector curto ligando a estacao ao bloco lateral. */
+.vant-journey-station-connector {
+  width: clamp(26px, 3vw, 46px);
+  height: 1px;
+  flex: none;
+  background: linear-gradient(90deg, transparent, rgba(92, 138, 6, .7));
+  transition: background 500ms ease;
+}
+
+.vant-journey-station[data-side='right'] .vant-journey-station-connector {
+  background: linear-gradient(270deg, transparent, rgba(92, 138, 6, .7));
+}
+
+.vant-journey-station-label {
+  display: flex;
+  align-items: baseline;
+  gap: .4rem;
+  color: #6f7f52;
+  font-size: .56rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 500ms ease;
+}
+
+.vant-journey-station-label b { color: rgba(92, 138, 6, .9); font-weight: 700; }
+
+/* Enquanto a logo passa por cima, so o no permanece: nada de texto sob a face. */
+.vant-journey-station[data-near='true'] .vant-journey-station-label,
+.vant-journey-station[data-near='true'] .vant-journey-station-connector {
+  opacity: 0;
+}
+
+.vant-journey-station-label,
+.vant-journey-station-connector { transition: opacity 420ms ease; }
+
+/* Concluida: permanece em verde-escuro. */
+.vant-journey-station[data-state='done'] .vant-journey-station-node {
+  background: rgba(92, 138, 6, .85);
+  border-color: rgba(92, 138, 6, .9);
+}
+
+/* Ainda por vir: quase apagada. */
+.vant-journey-station[data-state='ahead'] { opacity: .38; }
+
+/* Atual: verde-lima, brilho sutil e pulso curto. */
+.vant-journey-station[data-state='current'] .vant-journey-station-node {
+  background: var(--vant-accent);
+  border-color: var(--vant-accent);
+  box-shadow: 0 0 12px rgba(155, 220, 0, .55);
+  animation: vant-journey-station-pulse 2.4s ease-in-out infinite;
+}
+
+.vant-journey-station[data-state='current'] .vant-journey-station-label { color: var(--vant-text); }
+.vant-journey-station[data-state='current'] .vant-journey-station-label b { color: var(--vant-accent); }
+
+.vant-journey-station[data-state='current'] .vant-journey-station-connector {
+  background: linear-gradient(90deg, transparent, rgba(155, 220, 0, .8));
+}
+
+.vant-journey-station[data-state='current'][data-side='right'] .vant-journey-station-connector {
+  background: linear-gradient(270deg, transparent, rgba(155, 220, 0, .8));
+}
+
+@keyframes vant-journey-station-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(155, 220, 0, .45); }
+  50%      { box-shadow: 0 0 18px rgba(155, 220, 0, .75); }
+}
+
+/* ---------- rastro da logo ---------- */
+
+/* Energia curta deixada logo abaixo do ponto por onde ela passou. */
+.vant-journey-trail {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  width: 3px;
+  height: 46%;
+  margin-left: -1.5px;
+  background: linear-gradient(180deg, rgba(155, 220, 0, .5), transparent);
+  filter: blur(3px);
+  opacity: .85;
+  pointer-events: none;
+}
+
 
 /* ---------- corpo 3D ---------- */
 
@@ -2146,8 +2306,9 @@ html {
      o conteudo ocupa a largura toda e ficaria sob a face iluminada. */
   .vant-journey[data-zone='7'] { --j-scale: .5; --j-opacity: .07; }
   /* Esteira simplificada. */
-  .vant-journey-rail { width: 1px; }
-  .vant-journey-rail-ticks { animation: none; opacity: .2; }
+  /* Coluna estreita no mobile. */
+  .vant-journey { --j-column: clamp(90px, 34vw, 150px); }
+  .vant-journey-particles { animation: none; opacity: .22; }
 }
 
 @media (max-width: 640px) {
@@ -2161,7 +2322,7 @@ html {
   .vant-journey-parallax,
   .vant-journey-tilt,
   .vant-journey-float,
-  .vant-journey-rail-ticks,
+  .vant-journey-particles,
   .vant-hero-title-area,
   .vant-hero-support {
     animation: none !important;
@@ -2172,7 +2333,8 @@ html {
   .vant-journey-object { transition: none !important; }
   /* Objeto estatico, porem monumental: fica preso a primeira dobra. */
   .vant-journey[data-reduced='true'] .vant-journey-object { position: absolute; top: 50%; left: 50%; }
-  .vant-journey[data-reduced='true'] .vant-journey-rail { display: none; }
+  .vant-journey[data-reduced='true'] .vant-journey-column,
+  .vant-journey[data-reduced='true'] .vant-journey-stations { display: none; }
 }
 
 

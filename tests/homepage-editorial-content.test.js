@@ -356,12 +356,13 @@ test('the opaque hero object fades before content scrolls under it', () => {
   assert.match(homeStyles, /\[data-zone='0'\] \.vant-journey-object \{ opacity: calc\(1\.02 - var\(--j-page\)/);
   assert.match(journeyLogoSource, /--j-page/);
 
-  // Nas demais zonas o objeto vira estrutura de fundo.
+  // Fora da dobra a logo fica em primeiro plano, nunca abaixo de 45%.
   ['1', '2', '3', '4', '5', '6', '7'].forEach((zone) => {
     const rule = homeStyles.match(new RegExp(`\\.vant-journey\\[data-zone='${zone}'\\] \\{[^}]*\\}`));
     assert.ok(rule, `falta a zona ${zone}`);
-    const opacity = Number(rule[0].match(/--j-opacity: \.?(\d+)/)[1]);
-    assert.ok(opacity <= 15, `zona ${zone} deve ficar discreta, veio .${opacity}`);
+    // '.5' e '.56' sao 50% e 56%: le o decimal, nao os digitos soltos.
+    const opacity = Number(rule[0].match(/--j-opacity: (\.\d+|\d?\.?\d+)/)[1]);
+    assert.ok(opacity >= 0.45, `zona ${zone} deve ficar em primeiro plano, veio ${opacity}`);
   });
 });
 
@@ -460,4 +461,54 @@ test('sections reveal their parts in order, only once', () => {
   ['eyebrow', 'title', 'body', 'grid'].forEach((part) => {
     assert.match(homePageSource, new RegExp('data-reveal="' + part + '"'), `falta marcar ${part}`);
   });
+});
+
+test('the journey layers stack above the page without capturing input', () => {
+  // grid/fundos < conteudo lateral < esteira < logo < header
+  const obj = homeStyles.match(/\.vant-journey-object \{[\s\S]*?[\r\n]\}/);
+  assert.ok(obj);
+  const objZ = Number(obj[0].match(/z-index: (\d+)/)[1]);
+  const rail = homeStyles.match(/\.vant-journey-rail \{[\s\S]*?[\r\n]\}/);
+  const railZ = Number(rail[0].match(/z-index: (\d+)/)[1]);
+
+  assert.ok(objZ > railZ, 'a logo deve ficar acima da esteira');
+  assert.ok(railZ >= 2, 'a esteira deve ficar acima do grid e dos fundos');
+  assert.ok(objZ < 50, 'o header (z-50) deve continuar acima da logo');
+  assert.match(obj[0], /pointer-events: none/);
+
+  // Centralizacao independente do tamanho, sem margem negativa.
+  assert.match(obj[0], /translate\(-50%, -50%\)/);
+  assert.doesNotMatch(obj[0], /margin: calc\(var\(--j-size\)/);
+
+  // A profundidade acompanha a logo por toda a pagina.
+  assert.doesNotMatch(homeStyles, /not\(\[data-zone='0'\]\)[^{]*\{ display: none/);
+});
+
+test('the rail grows with the scroll and pulses with the object', () => {
+  // Trecho percorrido cresce do topo para baixo.
+  const prog = homeStyles.match(/\.vant-journey-rail-progress \{[\s\S]*?[\r\n]\}/);
+  assert.ok(prog, 'falta o trecho percorrido da esteira');
+  assert.match(prog[0], /transform-origin: 50% 0/);
+  assert.match(prog[0], /scaleY\(calc\(.*var\(--j-journey\)/);
+  assert.match(journeyLogoSource, /vant-journey-rail-progress/);
+
+  // Pulso acompanha a logo na mesma descida.
+  const glow = homeStyles.match(/\.vant-journey-rail-glow \{[\s\S]*?[\r\n]\}/);
+  assert.match(glow[0], /var\(--j-journey\) \* 26vh/);
+  assert.match(glow[0], /animation: vant-journey-pulse/);
+
+  // Particulas em fluxo continuo.
+  assert.match(homeStyles, /@keyframes vant-journey-flow/);
+});
+
+test('each section shifts the perspective of the object', () => {
+  const eixos = ['1', '2', '3', '4', '5', '6', '7'].map((zone) => {
+    const rule = homeStyles.match(new RegExp(String.raw`\.vant-journey\[data-zone='` + zone + String.raw`'\] \{[^}]*\}`));
+    assert.ok(rule, `falta a zona ${zone}`);
+    assert.match(rule[0], /--j-rx:/, `zona ${zone} sem inclinacao X`);
+    assert.match(rule[0], /--j-ry:/, `zona ${zone} sem rotacao Y`);
+    return rule[0].match(/--j-ry: (-?[\d.]+)deg/)[1];
+  });
+  // Angulos diferentes entre secoes: revela outra face a cada uma.
+  assert.ok(new Set(eixos).size > 1, 'as zonas devem variar a perspectiva');
 });

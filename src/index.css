@@ -1816,11 +1816,14 @@ html {
   position: fixed;
   top: 50%;
   left: 50%;
-  z-index: 0;
+  /* Acima do grid, dos paineis das secoes e da esteira. O header (z-50)
+     segue por cima, para a navegacao continuar clicavel. */
+  z-index: 30;
   width: var(--j-size);
   height: var(--j-size);
-  margin: calc(var(--j-size) / -2) 0 0 calc(var(--j-size) / -2);
   transform:
+    /* translate(-50%,-50%) centraliza sem depender do tamanho. */
+    translate(-50%, -50%)
     translate3d(0, calc(var(--j-y) + var(--j-journey) * 26vh), 0)
     scale(var(--j-scale))
     rotateZ(var(--j-rz));
@@ -1836,13 +1839,19 @@ html {
 
 /* Escala e opacidade por secao; a posicao horizontal nunca muda. */
 .vant-journey[data-zone='0'] { --j-scale: 1;   --j-rz: 0deg;  --j-opacity: 1; }
-.vant-journey[data-zone='1'] { --j-scale: .62; --j-rz: -4deg; --j-opacity: .13; }
-.vant-journey[data-zone='2'] { --j-scale: .55; --j-rz: 5deg;  --j-opacity: .11; }
-.vant-journey[data-zone='3'] { --j-scale: .5;  --j-rz: -6deg; --j-opacity: .12; }
-.vant-journey[data-zone='4'] { --j-scale: .58; --j-rz: 4deg;  --j-opacity: .1; }
-.vant-journey[data-zone='5'] { --j-scale: .52; --j-rz: -5deg; --j-opacity: .12; }
-.vant-journey[data-zone='6'] { --j-scale: .48; --j-rz: 6deg;  --j-opacity: .1; }
-.vant-journey[data-zone='7'] { --j-scale: .56; --j-rz: -4deg; --j-opacity: .11; }
+/*
+  Fora da dobra a logo fica em primeiro plano, nunca abaixo de 45%. A escala
+  para em ~0.40 do tamanho monumental: e o maior valor que ainda cabe na
+  faixa central em todas as proporcoes de tela testadas. Cada zona muda um
+  pouco a perspectiva, revelando outra face da extrusao.
+*/
+.vant-journey[data-zone='1'] { --j-scale: .42; --j-rz: -4deg; --j-rx: 5deg;  --j-ry: -7deg; --j-opacity: .56; }
+.vant-journey[data-zone='2'] { --j-scale: .39; --j-rz: 5deg;  --j-rx: -4deg; --j-ry: 8deg;  --j-opacity: .5; }
+.vant-journey[data-zone='3'] { --j-scale: .41; --j-rz: -6deg; --j-rx: 6deg;  --j-ry: -6deg; --j-opacity: .58; }
+.vant-journey[data-zone='4'] { --j-scale: .38; --j-rz: 4deg;  --j-rx: -5deg; --j-ry: 9deg;  --j-opacity: .47; }
+.vant-journey[data-zone='5'] { --j-scale: .41; --j-rz: -5deg; --j-rx: 4deg;  --j-ry: -8deg; --j-opacity: .55; }
+.vant-journey[data-zone='6'] { --j-scale: .38; --j-rz: 6deg;  --j-rx: -6deg; --j-ry: 7deg;  --j-opacity: .46; }
+.vant-journey[data-zone='7'] { --j-scale: .4;  --j-rz: -4deg; --j-rx: 5deg;  --j-ry: -9deg; --j-opacity: .52; }
 
 /*
   O objeto e fixo: sem isto, o conteudo da propria dobra rolaria por baixo dele
@@ -1861,15 +1870,7 @@ html {
 .vant-journey[data-zone='6'] .vant-journey-tilt { --tilt-bias-y: -10deg; }
 
 /*
-  Fora da primeira dobra o objeto fica a ~10%: extrusao, sombra e reflexos nao
-  sao perceptiveis, mas custam varias camadas mascaradas por quadro.
 */
-.vant-journey:not([data-zone='0']) .vant-journey-depth,
-.vant-journey:not([data-zone='0']) .vant-journey-rim,
-.vant-journey:not([data-zone='0']) .vant-journey-fill,
-.vant-journey:not([data-zone='0']) .vant-journey-sheen,
-.vant-journey:not([data-zone='0']) .vant-journey-shadow,
-.vant-journey:not([data-zone='0']) .vant-journey-halo { display: none; }
 
 /* ---------- esteira ---------- */
 
@@ -1878,7 +1879,8 @@ html {
   top: 0;
   bottom: 0;
   left: 50%;
-  z-index: 0;
+  /* Acima do grid e dos fundos, abaixo da logo. */
+  z-index: 2;
   width: 2px;
   margin-left: -1px;
   /* A esteira nunca sai do centro. */
@@ -1899,22 +1901,53 @@ html {
   animation: vant-journey-flow 14s linear infinite;
 }
 
-/* Ponto de luz que acende onde o objeto esta e apaga depois que ele passa. */
+/*
+  Trecho ja percorrido: cresce do topo para baixo conforme a pagina avanca e
+  permanece aceso em verde-escuro atras do pulso.
+*/
+.vant-journey-rail-progress {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 100%;
+  transform-origin: 50% 0;
+  transform: scaleY(calc(.06 + var(--j-journey) * .94));
+  background: linear-gradient(180deg, rgba(92, 138, 6, .9), rgba(92, 138, 6, .55));
+  box-shadow: 0 0 10px rgba(155, 220, 0, .25);
+}
+
+/* Particulas descendo pela estrutura, como energia em fluxo. */
+.vant-journey-rail-ticks {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(180deg, rgba(155, 220, 0, .55) 0 5px, transparent 5px 44px),
+    repeating-linear-gradient(180deg, rgba(210, 255, 120, .35) 0 2px, transparent 2px 17px);
+  opacity: .42;
+  animation: vant-journey-flow 9s linear infinite;
+}
+
+/* Pulso verde-lima que acompanha a logo na descida. */
 .vant-journey-rail-glow {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 130px;
-  height: 300px;
-  margin: -150px 0 0 -65px;
-  background: radial-gradient(ellipse at center, rgba(155, 220, 0, .32), rgba(155, 220, 0, .08) 42%, transparent 70%);
-  filter: blur(10px);
+  width: 150px;
+  height: 320px;
+  margin: -160px 0 0 -75px;
+  background: radial-gradient(ellipse at center, rgba(155, 220, 0, .42), rgba(155, 220, 0, .1) 44%, transparent 72%);
+  filter: blur(12px);
   transform: translate3d(0, calc(var(--j-journey) * 26vh), 0);
+  animation: vant-journey-pulse 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes vant-journey-pulse {
+  from { opacity: .72; }
+  to   { opacity: 1; }
 }
 
 @keyframes vant-journey-flow {
-  from { background-position: 0 0; }
-  to   { background-position: 0 52px; }
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 0 49px, 0 19px; }
 }
 
 /* ---------- corpo 3D ---------- */
@@ -2109,6 +2142,8 @@ html {
   .vant-journey[data-zone='4'],
   .vant-journey[data-zone='5'],
   .vant-journey[data-zone='6'],
+  /* Sem faixa de exclusao no mobile, a logo nao pode ganhar presenca:
+     o conteudo ocupa a largura toda e ficaria sob a face iluminada. */
   .vant-journey[data-zone='7'] { --j-scale: .5; --j-opacity: .07; }
   /* Esteira simplificada. */
   .vant-journey-rail { width: 1px; }

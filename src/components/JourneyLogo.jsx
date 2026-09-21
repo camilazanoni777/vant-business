@@ -125,6 +125,8 @@ function JourneyLogo() {
       {/* Esteira: trilho industrial por onde o objeto desce. */}
       <div className="vant-journey-rail">
         <span className="vant-journey-rail-line" />
+        {/* Trecho ja percorrido: cresce do topo conforme o scroll avanca. */}
+        <span className="vant-journey-rail-progress" />
         <span className="vant-journey-rail-ticks" />
         <span className="vant-journey-rail-glow" />
       </div>

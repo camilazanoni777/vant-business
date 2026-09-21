@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24.599" height="23.337" viewBox="0 0 24.599 23.337">
+  <defs>
+    <radialGradient id="radial-gradient" cx="0.5" cy="-0.892" r="0.886" gradientTransform="translate(0 2.366) scale(1 2.431)" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0.6"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-3" cx="0.5" cy="0" r="1.169" gradientTransform="translate(0 0) scale(1 1.575)" xlink:href="#radial-gradient"/>
+  </defs>
+  <g id="Group_9718" transform="translate(0.299 0.269)">
+    <path id="Path_11399" d="M584.182,393.706l-1.883-.925-8.218,4.353a3.029,3.029,0,0,1-2.837,0l-8.218-4.352-1.883.925a.863.863,0,0,0-.023,1.535l10.124,5.362a3.029,3.029,0,0,0,2.837,0l10.124-5.362a.863.863,0,0,0-.023-1.535Z" transform="translate(-560.663 -378.163)" stroke="#fff" stroke-width="0.5" opacity="0.4" fill="url(#radial-gradient)"/>
+    <path id="Path_11400" d="M584.178,308.536l-1.864-.916-8.237,4.363a3.029,3.029,0,0,1-2.837,0L563,307.62l-1.864.916a.862.862,0,0,0-.023,1.535l10.124,5.362a3.029,3.029,0,0,0,2.837,0L584.2,310.07a.863.863,0,0,0-.023-1.535Z" transform="translate(-560.659 -296.429)" stroke="#fff" stroke-width="0.5" opacity="0.6" fill="url(#radial-gradient)"/>
+    <path id="Path_3570_00000022524399146698099000000015618269424764638626_" d="M584.221,36.318,574.1,41.68a3.029,3.029,0,0,1-2.837,0l-10.124-5.362a.863.863,0,0,1,.023-1.535l10.183-5a3.028,3.028,0,0,1,2.672,0l10.183,5a.863.863,0,0,1,.023,1.535Z" transform="translate(-560.679 -29.47)" stroke="#fff" stroke-width="0.5" opacity="0.999" fill="url(#radial-gradient-3)"/>
+    <path id="Path_11401" d="M584.178,223.595l-1.862-.915-8.239,4.363a3.029,3.029,0,0,1-2.837,0L563,222.68l-1.862.915a.862.862,0,0,0-.023,1.535l10.124,5.362a3.029,3.029,0,0,0,2.837,0l10.124-5.362a.863.863,0,0,0-.023-1.535Z" transform="translate(-560.659 -214.906)" stroke="#fff" stroke-width="0.5" opacity="0.8" fill="url(#radial-gradient)"/>
+  </g>
+</svg>

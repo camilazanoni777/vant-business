@@ -1,0 +1,149 @@
+[
+  {
+    "item_id": "pesquisa",
+    "agent_name": "Pesquisador",
+    "title": "Ferramentas descobertas",
+    "status": "aguardando_avaliacao",
+    "created_at": "2026-05-09T05:52:00.000Z",
+    "updated_at": "2026-05-09T05:52:00.000Z",
+    "payload": {
+      "agentId": "pesquisa",
+      "agentName": "Pesquisador",
+      "goal": "Encontra ferramentas de IA novas, remove duplicadas e entrega o lote bruto para triagem.",
+      "title": "Ferramentas descobertas",
+      "summary": "Foram encontrados 10 itens candidatos para IA, antes da classificacao.",
+      "nextStep": "Ativar o separador para marcar tem afiliado ou nao tem afiliado.",
+      "items": [
+        { "id": "taskade", "name": "Taskade", "status": "com_afiliado" },
+        { "id": "elevenlabs", "name": "ElevenLabs", "status": "com_afiliado" },
+        { "id": "chatgpt", "name": "ChatGPT", "status": "sem_afiliado" },
+        { "id": "claude", "name": "Claude", "status": "sem_afiliado" },
+        { "id": "perplexity", "name": "Perplexity", "status": "sem_afiliado" },
+        { "id": "n8n", "name": "n8n", "status": "sem_afiliado" },
+        { "id": "notebooklm", "name": "NotebookLM", "status": "sem_afiliado" },
+        { "id": "gamma", "name": "Gamma", "status": "sem_afiliado" },
+        { "id": "suno", "name": "Suno", "status": "sem_afiliado" },
+        { "id": "runway", "name": "Runway", "status": "sem_afiliado" }
+      ],
+      "generatedAt": "2026-05-09T05:52:00.000Z"
+    }
+  },
+  {
+    "item_id": "afiliados",
+    "agent_name": "Separador",
+    "title": "Ferramentas classificadas",
+    "status": "aguardando_avaliacao",
+    "created_at": "2026-05-09T05:52:10.000Z",
+    "updated_at": "2026-05-09T05:52:10.000Z",
+    "payload": {
+      "agentId": "afiliados",
+      "agentName": "Separador",
+      "goal": "Marca cada ferramenta com etiqueta de tem programa de afiliados ou nao tem programa de afiliados.",
+      "title": "Ferramentas classificadas",
+      "summary": "Taskade e ElevenLabs ficaram na rota de afiliados; as demais seguem para ebook.",
+      "nextStep": "Revisar a separacao antes de enviar cada grupo para sua rota de conteudo.",
+      "items": [
+        {
+          "id": "taskade",
+          "name": "Taskade",
+          "affiliateStatus": "link ativo",
+          "sourceUrl": "https://taskade.com"
+        },
+        {
+          "id": "elevenlabs",
+          "name": "ElevenLabs",
+          "affiliateStatus": "programa confirmado",
+          "sourceUrl": "https://elevenlabs.io"
+        }
+      ],
+      "generatedAt": "2026-05-09T05:52:10.000Z"
+    }
+  },
+  {
+    "item_id": "ebook",
+    "agent_name": "Agente de Ebook",
+    "title": "Fila de ebooks preparada",
+    "status": "aguardando_avaliacao",
+    "created_at": "2026-05-09T05:52:20.000Z",
+    "updated_at": "2026-05-09T05:52:20.000Z",
+    "payload": {
+      "agentId": "ebook",
+      "agentName": "Agente de Ebook",
+      "goal": "Transforma ferramentas sem link configurado em ideias de ebook para captura.",
+      "title": "Fila de ebooks preparada",
+      "summary": "8 ferramentas ficaram para ebook porque ainda nao possuem link de afiliado configurado na VANT.",
+      "nextStep": "Escolher a primeira ferramenta para virar ebook completo e landing de captura.",
+      "items": [
+        { "id": "chatgpt", "name": "ChatGPT", "ebookIdea": "Criar guia prático com prompts e fluxos de produtividade." },
+        { "id": "claude", "name": "Claude", "ebookIdea": "Estruturar um ebook de escrita e pesquisa aprofundada." },
+        { "id": "perplexity", "name": "Perplexity", "ebookIdea": "Montar comparativo de pesquisa com fontes e insights." },
+        { "id": "n8n", "name": "n8n", "ebookIdea": "Ebook sobre automações visuais e integrações." },
+        { "id": "notebooklm", "name": "NotebookLM", "ebookIdea": "Guia de estudo e organização de conhecimento." },
+        { "id": "gamma", "name": "Gamma", "ebookIdea": "Como criar apresentações e landing pages com IA." },
+        { "id": "suno", "name": "Suno", "ebookIdea": "Fluxos criativos para música, roteiro e marca." },
+        { "id": "runway", "name": "Runway", "ebookIdea": "Produção visual e video com IA sem complicação." }
+      ],
+      "generatedAt": "2026-05-09T05:52:20.000Z"
+    }
+  },
+  {
+    "item_id": "roteiro",
+    "agent_name": "Agente de Roteiro",
+    "title": "Roteiros pendentes de aprovacao",
+    "status": "aguardando_avaliacao",
+    "created_at": "2026-05-09T05:52:30.000Z",
+    "updated_at": "2026-05-09T05:52:30.000Z",
+    "payload": {
+      "agentId": "roteiro",
+      "agentName": "Agente de Roteiro",
+      "goal": "Gera roteiro apenas para ferramentas com potencial de afiliado.",
+      "title": "Roteiros pendentes de aprovacao",
+      "summary": "A fila de roteiro deve comecar por Taskade, porque o link ja esta ativo. ElevenLabs fica aguardando o link proprio.",
+      "nextStep": "Depois da aprovacao, gerar roteiro final com hook, demo e CTA rastreavel.",
+      "items": [
+        { "id": "taskade", "name": "Taskade", "scriptDirection": "Produzir roteiro com gancho, uso real e chamada para clique rastreavel." },
+        { "id": "elevenlabs", "name": "ElevenLabs", "scriptDirection": "Produzir roteiro quando o link de afiliado estiver definido." }
+      ],
+      "generatedAt": "2026-05-09T05:52:30.000Z"
+    }
+  },
+  {
+    "item_id": "noticias",
+    "agent_name": "Agente de Noticias",
+    "title": "Noticias prontas para revisao",
+    "status": "aguardando_avaliacao",
+    "created_at": "2026-05-09T05:52:40.000Z",
+    "updated_at": "2026-05-09T05:52:40.000Z",
+    "payload": {
+      "agentId": "noticias",
+      "agentName": "Agente de Noticias",
+      "goal": "Mostra as noticias coletadas e o que esta aguardando aprovacao.",
+      "title": "Noticias prontas para revisao",
+      "summary": "0 noticias aguardam avaliacao e 0 estao aprovadas para newsletter.",
+      "nextStep": "Aprovar manualmente as melhores noticias antes de disparar o email diario.",
+      "items": [],
+      "generatedAt": "2026-05-09T05:52:40.000Z"
+    }
+  },
+  {
+    "item_id": "sincronizador",
+    "agent_name": "Agente Sincronizador",
+    "title": "Sincronizacao final do ciclo",
+    "status": "aguardando_avaliacao",
+    "created_at": "2026-05-09T05:52:50.000Z",
+    "updated_at": "2026-05-09T05:52:50.000Z",
+    "payload": {
+      "agentId": "sincronizador",
+      "agentName": "Agente Sincronizador",
+      "goal": "Consolida respostas, cliques e proximas acoes antes da publicacao.",
+      "title": "Sincronizacao final do ciclo",
+      "summary": "Fluxo correto: pesquisa -> afiliados -> ebook -> roteiro -> noticias -> sincronizador. Nada deve ir ao publico sem avaliacao.",
+      "nextStep": "Usar cliques e leads capturados para decidir quais ferramentas viram ebook, video ou pagina dedicada.",
+      "items": [
+        { "id": "admin", "title": "Fila e cliques centralizados no painel administrativo." },
+        { "id": "public", "title": "Usuario ve apenas ferramentas, ebooks e noticias publicas." }
+      ],
+      "generatedAt": "2026-05-09T05:52:50.000Z"
+    }
+  }
+]

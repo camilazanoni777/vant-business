@@ -349,20 +349,13 @@ test('the journey is one continuous SVG path across every section', () => {
 
 test('the path zig-zags and passes through each symbol centre', () => {
   // Os mesmos offsets alimentam o caminho e a posicao do simbolo.
-  const offsets = journeyLogoSource.match(/const OFFSETS = \[([^\]]+)\]/);
-  assert.ok(offsets, 'falta a lista de deslocamentos');
-  const valores = offsets[1].split(',').map((v) => Number(v.trim()));
-  assert.equal(valores.length, 8);
-  // Alterna de lado: existe ao menos um positivo e um negativo.
-  assert.ok(valores.some((v) => v > 0) && valores.some((v) => v < 0), 'os lados devem alternar');
-
-  // O ancoradouro do simbolo e o mesmo ponto usado no caminho.
-  assert.match(journeyLogoSource, /x: width \/ 2 \+ offset \* width/);
-  assert.match(journeyLogoSource, /--symbol-x/);
-  assert.match(journeyLogoSource, /--symbol-y/);
-
-  // Amplitude menor em telas estreitas.
-  assert.match(journeyLogoSource, /const narrow = window\.innerWidth < 1024/);
+  // Os extremos alternam: esquerda ~11% e direita ~89% da viewport.
+  const edges = journeyLogoSource.match(/desktop: \[([\d.]+), ([\d.]+)\]/);
+  assert.ok(edges, 'faltam os extremos do zigue-zague');
+  assert.ok(Number(edges[1]) >= 0.08 && Number(edges[1]) <= 0.12, `extremo esquerdo deve ficar entre 8% e 12%, veio ${edges[1]}`);
+  assert.ok(Number(edges[2]) >= 0.88 && Number(edges[2]) <= 0.92, `extremo direito deve ficar entre 88% e 92%, veio ${edges[2]}`);
+  // Tablet e mobile tem os seus proprios extremos.
+  assert.match(journeyLogoSource, /EDGES\.mobile : vw < 1280 \? EDGES\.tablet : EDGES\.desktop/);
 });
 
 test('the path is drawn progressively with the scroll', () => {

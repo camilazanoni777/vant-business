@@ -6,11 +6,23 @@ const LOGO_SOURCE = '/assets/brand/vant-logo-official.png';
 const DEPTH_LAYERS = 5;
 
 /*
-  Deslocamento horizontal do simbolo em cada dobra, em fracao da largura util.
-  A alternancia e o que desenha o zigue-zague; o caminho passa pelo centro de
-  cada simbolo, entao os dois vem sempre da mesma lista.
+  A camada decorativa vive nos extremos: o simbolo alterna entre 8% e 92%
+  da largura, sempre respeitando MIN_SYMBOL_EDGE. O conteudo nunca acompanha
+  esse movimento - ele fica no container editorial central.
 */
-const OFFSETS = [0, 0.15, -0.15, 0.09, -0.13, 0.13, -0.09, 0];
+const EDGES = { desktop: [0.08, 0.92], tablet: [0.08, 0.92], mobile: [0.07, 0.93] };
+
+/*
+  Em telas estreitas nao cabe simbolo AO LADO do texto: 110px de simbolo mais
+  os respiros consomem metade da largura. Entao a linha corre rente a borda e o
+  simbolo ocupa a faixa livre entre uma secao e outra - que e justamente onde a
+  diagonal ja acontecia.
+*/
+const COMPACT_MAX = 1100;
+// Distancia minima do simbolo ate a borda da tela.
+const MIN_SYMBOL_EDGE = 32;
+// Folga entre a linha e o inicio do texto (espelhada no CSS via --line-inset).
+const BAND_PADDING = 48;
 
 // Quanto cada simbolo gira enquanto a sua secao atravessa a viewport.
 const ROTATION_PER_SECTION = 150;
@@ -41,6 +53,8 @@ function buildPath(anchors) {
 function JourneyPath() {
   const rootRef = useRef(null);
   const pathsRef = useRef([]);
+  // Sonda invisivel: devolve --sym-size ja resolvido pelo CSS.
+  const metricRef = useRef(null);
   const [geometry, setGeometry] = useState({ width: 0, height: 0, d: '', anchors: [] });
   const [isReduced, setIsReduced] = useState(false);
 
@@ -69,29 +83,77 @@ function JourneyPath() {
     function measure() {
       const box = presentation.getBoundingClientRect();
       const base = box.top + window.scrollY;
-      const width = presentation.offsetWidth;
-      const height = presentation.offsetHeight;
+      /*
+        A camada decorativa rompe o container editorial: as posicoes sao em
+        fracao da VIEWPORT, nao da largura de .vant-presentation (limitada a
+        1280px), senao o simbolo nunca alcancaria os extremos. clientWidth e
+        nao 100vw porque 100vw inclui a barra de rolagem e criaria scroll
+        horizontal; o alinhamento com a borda da tela vem do offset abaixo.
+      */
+      const width = document.documentElement.clientWidth;
+      root.style.width = `${width}px`;
+      root.style.left = `${-box.left}px`;
 
-      // Amplitude menor em telas estreitas: o zigue-zague existe, mas nao
-      // empurra o simbolo para cima do texto.
-      const narrow = window.innerWidth < 1024;
-      const amplitude = narrow ? 0.34 : 1;
+      const vw = window.innerWidth;
+      const compact = vw <= COMPACT_MAX;
+      const [near, far] = compact ? EDGES.mobile : vw < 1280 ? EDGES.tablet : EDGES.desktop;
 
-      const anchors = sections.map((section, index) => {
+      /*
+        O CSS afasta o texto da linha usando este recuo, por isso ele e definido
+        antes de medir as secoes - a altura delas depende do padding resultante.
+      */
+      presentation.style.setProperty('--line-inset', compact ? `${Math.round(width * near)}px` : '0px');
+      const symbolSize = metricRef.current?.offsetWidth || 160;
+
+      /*
+        Recuo real do centro do simbolo ate a borda, ja garantindo os 32px
+        minimos. O CSS deriva a largura do conteudo deste valor, entao existe
+        uma unica fonte de verdade para o territorio da decoracao.
+      */
+      const inset = Math.max(width * near, MIN_SYMBOL_EDGE + symbolSize / 2);
+      presentation.style.setProperty('--sym-inset', `${Math.round(inset)}px`);
+
+      const symbols = [];
+      const anchors = [];
+
+      sections.forEach((section, index) => {
         const rect = section.getBoundingClientRect();
-        const offset = (OFFSETS[index % OFFSETS.length] || 0) * amplitude;
-        // A composicao da secao segue o trajeto: o texto vai para o lado
-        // oposto ao simbolo daquela dobra.
-        section.dataset.symbolSide =
-          offset > 0.02 ? 'right' : offset < -0.02 ? 'left' : 'centre';
+        const top = rect.top + window.scrollY - base;
+        const side = index % 2 === 0 ? 'left' : 'right';
+        const x = side === 'left' ? inset : width - inset;
 
-        return {
-          x: width / 2 + offset * width,
-          y: rect.top + window.scrollY - base + rect.height / 2,
-        };
+        section.dataset.symbolSide = side;
+
+        if (compact) {
+          /*
+            O simbolo vai para a faixa superior vazia da secao, encostado na sua
+            borda mas sem nunca ser cortado.
+          */
+          // A linha corre rente a borda; o simbolo ja veio recuado pelo inset.
+          const lineX = side === 'left' ? width * near : width * far;
+          const symbolY = top + symbolSize / 2 + BAND_PADDING / 2;
+
+          symbols.push({ x, y: symbolY, side });
+
+          // A diagonal passa pelo simbolo e desce rente a borda, fora do texto.
+          anchors.push({ x, y: symbolY });
+          anchors.push({ x: lineX, y: top + symbolSize + BAND_PADDING });
+          anchors.push({ x: lineX, y: top + rect.height - 16 });
+          return;
+        }
+
+        symbols.push({ x, y: top + rect.height / 2, side });
+
+        /*
+          Dois ancoradouros por secao mantem o traco vertical enquanto a dobra
+          esta em leitura; a diagonal acontece so no intervalo entre secoes.
+        */
+        anchors.push({ x, y: top + rect.height * 0.12 });
+        anchors.push({ x, y: top + rect.height * 0.88 });
       });
 
-      setGeometry({ width, height, d: buildPath(anchors), anchors });
+      // A altura so agora: o recuo e o lado da linha ja mudaram o layout.
+      setGeometry({ width, height: presentation.offsetHeight, d: buildPath(anchors), anchors: symbols });
     }
 
     // ---- scroll ----
@@ -177,6 +239,7 @@ function JourneyPath() {
 
   return (
     <div className="vant-journey" ref={rootRef} aria-hidden="true" data-reduced={isReduced ? 'true' : 'false'}>
+      <span className="vant-journey-metric" ref={metricRef} />
       {d ? (
         <svg
           className="vant-journey-svg"

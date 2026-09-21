@@ -2033,7 +2033,6 @@ html {
 .vant-method-steps {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
-.vant-method-steps > li:nth-child(4) { grid-column: 5; }
 
 .vant-business-units-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2742,4 +2741,478 @@ html {
   container quando o conteudo nao cabe. Zerar e o que evita corte e overflow.
 */
 .vant-presentation-section > *,
-.vant-presentation-hero > * { min-width: 0; }
+.vant-presentation-hero > * { min-width: 0; }
+/* ============================================================
+   Camada decorativa nos extremos + grade editorial independente
+   ============================================================ */
+
+/* A decoracao nao entra na grade do conteudo nem altera o fluxo. */
+.vant-journey {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Simbolo menor e proximo da borda, sem ser cortado. */
+.vant-journey-symbol { --symbol-size: clamp(190px, 16vw, 280px); }
+
+/*
+  Container editorial: mesma largura e mesmo alinhamento em todas as dobras,
+  independente do lado em que a linha esta.
+*/
+.vant-presentation-section > *,
+.vant-presentation-hero > * {
+  position: relative;
+  z-index: 3;
+  width: min(1180px, calc(100% - 96px));
+  margin-inline: auto;
+  min-width: 0;
+}
+
+@media (min-width: 1600px) {
+  .vant-presentation-section > *,
+  .vant-presentation-hero > * { width: min(1280px, calc(100% - 96px)); }
+}
+
+/*
+  A decoracao nao pode mais reduzir a largura do conteudo: as regras que
+  deslocavam texto conforme o lado da linha saem de cena.
+*/
+.vant-presentation-section[data-symbol-side='right'] .vant-presentation-section-copy,
+.vant-presentation-section[data-symbol-side='left'] .vant-presentation-section-copy,
+.vant-presentation-section[data-symbol-side='right'] .vant-business-units-note,
+.vant-presentation-section[data-symbol-side='left'] .vant-business-units-note,
+.vant-presentation-section[data-symbol-side='centre'] .vant-presentation-section-copy {
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: 0;
+  text-align: left;
+}
+
+.vant-presentation-section[data-symbol-side='right'] .vant-method-steps,
+.vant-presentation-section[data-symbol-side='right'] .vant-business-units-grid,
+.vant-presentation-section[data-symbol-side='right'] .vant-growth-system-grid,
+.vant-presentation-section[data-symbol-side='right'] .vant-squads-table,
+.vant-presentation-section[data-symbol-side='right'] .vant-team-grid,
+.vant-presentation-section[data-symbol-side='left'] .vant-method-steps,
+.vant-presentation-section[data-symbol-side='left'] .vant-business-units-grid,
+.vant-presentation-section[data-symbol-side='left'] .vant-growth-system-grid,
+.vant-presentation-section[data-symbol-side='left'] .vant-squads-table,
+.vant-presentation-section[data-symbol-side='left'] .vant-team-grid {
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+/* ---------- tipografia ---------- */
+
+.vant-presentation-section h2,
+.vant-fold-lead h2 {
+  max-width: 900px;
+  font-size: clamp(3.5rem, 5.5vw, 6rem);
+  line-height: .95;
+  letter-spacing: -.055em;
+  /* Espaco entre selo e titulo. */
+  margin-top: 1.25rem;
+}
+
+/* Respiro entre o titulo e o proximo grupo de conteudo. */
+.vant-presentation-section-copy > p:last-child { margin-top: 3.5rem; }
+
+.vant-presentation-section-copy > p:last-child,
+.vant-fold-support p,
+.vant-business-units-note,
+.vant-presentation-lead {
+  max-width: 680px;
+  font-size: clamp(1.125rem, 1.35vw, 1.375rem);
+  line-height: 1.55;
+  /* Secundarios com mais contraste. */
+  color: #c4c4c4;
+}
+
+.vant-method-steps h3,
+.vant-business-unit-card h3,
+.vant-growth-system-grid h3,
+.vant-team-card h3 {
+  font-size: clamp(1.125rem, 1.25vw, 1.375rem);
+  line-height: 1.2;
+}
+
+.vant-method-steps p,
+.vant-business-unit-card > p,
+.vant-growth-system-grid p,
+.vant-team-card-description,
+.vant-squads-table-row p {
+  font-size: clamp(1rem, 1.05vw, 1.125rem);
+  line-height: 1.55;
+  color: #b8b8b8;
+}
+
+/* ---------- cinco etapas ---------- */
+
+.vant-method-steps {
+  gap: 20px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.vant-method-steps > li {
+  min-height: 0;
+  border: 1px solid var(--vant-line);
+  background: var(--vant-panel);
+  padding: clamp(1.5rem, 1.9vw, 1.875rem);
+  transition: border-color 200ms ease, background 200ms ease, transform 200ms ease;
+}
+
+.vant-method-steps > li:hover {
+  border-color: rgba(155, 220, 0, .45);
+  background: var(--vant-panel-soft);
+  transform: translateY(-2px);
+}
+
+.vant-method-steps > li > span {
+  color: var(--vant-accent);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+/* Entre 1024 e 1439: tres em cima, dois centralizados embaixo. */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .vant-method-steps { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .vant-method-steps > li { grid-column: span 2; }
+  .vant-method-steps > li:nth-child(4) { grid-column: 2 / span 2; }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .vant-method-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------- tablet e mobile ---------- */
+
+@media (max-width: 1023px) {
+  .vant-journey-symbol { --symbol-size: clamp(150px, 20vw, 200px); }
+  .vant-presentation-section > *,
+  .vant-presentation-hero > * { width: calc(100% - 48px); }
+}
+
+@media (max-width: 767px) {
+  .vant-journey-symbol { --symbol-size: clamp(110px, 34vw, 150px); }
+  .vant-presentation-section > *,
+  .vant-presentation-hero > * { width: calc(100% - 48px); }
+
+  .vant-presentation-section h2,
+  .vant-fold-lead h2 {
+    max-width: 100%;
+    font-size: clamp(2.5rem, 12vw, 4rem);
+    letter-spacing: -.04em;
+  }
+
+  .vant-presentation-section-copy > p:last-child { margin-top: 2rem; }
+
+  .vant-method-steps { grid-template-columns: 1fr; gap: 16px; }
+  .vant-method-steps > li:nth-child(4) { grid-column: auto; }
+}
+
+/* No mobile o padding da secao ja garante a margem: o container usa tudo. */
+@media (max-width: 767px) {
+  .vant-presentation-section > *,
+  .vant-presentation-hero > * { width: 100%; }
+  .vant-journey-symbol { --symbol-size: clamp(110px, 28vw, 150px); }
+}
+
+/* ---------- separacao real entre decoracao e conteudo ---------- */
+
+/*
+  Com o simbolo a 11% da viewport e ate 280px de largura, um container fixo de
+  1180px cruzaria a arte em telas menores que ~1900px. A largura do conteudo
+  passa a ser derivada do territorio decorativo: 1180px e o teto, e o limite
+  real e o espaco que sobra depois do simbolo mais uma folga de 36px.
+*/
+.vant-presentation {
+  --sym-size: clamp(190px, 13vw, 250px);
+  /* --sym-inset vem do JS: e a posicao real do centro do simbolo. */
+  --sym-gutter: calc(var(--sym-inset, 11vw) + var(--sym-size) / 2 + 24px);
+}
+
+.vant-journey-symbol { --symbol-size: var(--sym-size); }
+
+.vant-presentation-section > *,
+.vant-presentation-hero > * {
+  width: min(1180px, calc(100vw - 2 * var(--sym-gutter)), calc(100% - 96px));
+}
+
+@media (min-width: 1600px) {
+  .vant-presentation-section > *,
+  .vant-presentation-hero > * {
+    width: min(1280px, calc(100vw - 2 * var(--sym-gutter)), calc(100% - 96px));
+  }
+}
+
+@media (max-width: 1279px) {
+  .vant-presentation { --sym-size: clamp(140px, 15vw, 190px); }
+}
+
+/* Mobile: o simbolo sai da faixa de leitura e o conteudo usa a largura toda. */
+@media (max-width: 767px) {
+  .vant-presentation-section > *,
+  .vant-presentation-hero > * { width: 100%; }
+}
+
+/*
+  A camada decorativa rompe o container; largura e offset vem do JS.
+  overflow-x: clip apara o que a rotacao 3D joga alem da borda da tela sem
+  criar container de rolagem - o eixo vertical segue livre para o caminho
+  sair alem do topo e do fim. Reservar a diagonal do simbolo custaria cerca
+  de 150px de largura de leitura em 1440.
+*/
+.vant-journey {
+  right: auto;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/* No mobile a linha fica mais discreta; o simbolo mantem a opacidade cheia. */
+@media (max-width: 767px) {
+  .vant-journey-glow { stroke-width: 8; }
+}
+
+/*
+  Tablet e abaixo: nao ha largura para separar decoracao e conteudo sem
+  espremer o texto. O conteudo usa a largura util e o simbolo recua para o
+  fundo, continuando visivel sem disputar a leitura.
+*/
+@media (max-width: 1100px) {
+  .vant-presentation { --sym-size: clamp(110px, 14vw, 160px); }
+}
+
+/* Sonda de medida: entrega --sym-size resolvido ao JS, sem pintar nada. */
+.vant-journey-metric {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--sym-size);
+  height: 0;
+  visibility: hidden;
+}
+
+/*
+  A faixa central reservada pertencia a composicao antiga, quando a logo ficava
+  no meio da dobra. Com o simbolo no extremo, ela so espremia o texto de apoio.
+*/
+.vant-fold-stage,
+.vant-fold--composed[data-symbol-side='left'] .vant-fold-stage,
+.vant-fold--composed[data-symbol-side='right'] .vant-fold-stage {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  gap: clamp(2rem, 4vw, 4.5rem);
+}
+
+.vant-fold-centre { display: none; }
+.vant-fold-support { padding-left: 0; }
+.vant-fold-support p { max-width: min(520px, 100%); }
+
+@media (max-width: 1023px) {
+  .vant-fold-stage,
+  .vant-fold--composed[data-symbol-side='left'] .vant-fold-stage,
+  .vant-fold--composed[data-symbol-side='right'] .vant-fold-stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Cards mais enxutos: sobra largura para a palavra mais longa de cada etapa. */
+.vant-method-steps > li { padding: clamp(1.5rem, 1.6vw, 1.75rem); }
+
+.vant-method-steps h3,
+.vant-method-steps p,
+.vant-presentation-section h2,
+.vant-presentation-section p { overflow-wrap: break-word; }
+
+/* ============================================================
+   Grade editorial unica - 12 colunas, identica em todas as dobras
+   O conteudo nunca usa posicionamento absoluto: so a decoracao usa.
+   ============================================================ */
+
+.vant-presentation {
+  --vant-header-h: 62px;
+  --vant-fold-pad: clamp(96px, 10vh, 140px);
+}
+
+/* Simbolo menor no desktop: e o que devolve largura de leitura ao texto. */
+@media (min-width: 1101px) {
+  .vant-presentation { --sym-size: clamp(140px, 10vw, 200px); }
+}
+
+/* A secao passa a ser apenas o palco: fundo, borda e respiro vertical. */
+.vant-presentation-hero,
+.vant-presentation-section,
+.vant-presentation-hero.vant-hero--composed,
+.vant-presentation-section.vant-fold--composed {
+  display: block;
+  padding: var(--vant-fold-pad) 0;
+}
+
+.vant-section-content {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(20px, 2vw, 32px);
+  row-gap: clamp(48px, 6vh, 80px);
+  align-content: center;
+  /*
+    1240px e o teto do briefing. O terceiro limite mantem a promessa de que a
+    linha e o simbolo ficam FORA da area editorial: abaixo de ~1700px nao cabem
+    1240px de texto mais o territorio da decoracao nos dois lados.
+  */
+  width: min(1240px, calc(100% - 96px), calc(100vw - 2 * var(--sym-gutter)));
+  min-height: calc(100svh - var(--vant-header-h) - var(--vant-fold-pad) * 2);
+  margin-inline: auto;
+}
+
+/* ---------- areas ---------- */
+
+.vant-section-heading,
+.vant-section-aside,
+.vant-section-full { min-width: 0; }
+
+.vant-section-heading { grid-column: 1 / span 10; align-self: center; }
+.vant-section-content--split .vant-section-heading { grid-column: 1 / span 7; }
+.vant-section-aside { grid-column: 9 / -1; align-self: center; }
+.vant-section-full { grid-column: 1 / -1; }
+
+/* Entre 1101 e 1439 a coluna de apoio comeca uma faixa antes: sem isso o
+   paragrafo cai abaixo de 40 caracteres por linha. */
+@media (min-width: 1101px) and (max-width: 1439px) {
+  .vant-section-aside { grid-column: 8 / -1; }
+}
+
+/* ---------- tipografia ---------- */
+
+.vant-presentation .vant-section-content .vant-section-heading .brand-kicker {
+  margin: 0 0 20px;
+  max-width: 520px;
+  line-height: 1.4;
+}
+
+.vant-presentation .vant-section-content .vant-section-heading h1,
+.vant-presentation .vant-section-content .vant-section-heading h2 {
+  margin: 0;
+  max-width: 800px;
+  line-height: .95;
+  letter-spacing: -.055em;
+  /* Evita palavra isolada em linha propria. */
+  text-wrap: balance;
+}
+
+.vant-presentation .vant-section-content .vant-section-heading h1 {
+  max-width: 760px;
+  /* Maior escala que ainda quebra em tres linhas dentro das 7 colunas. */
+  font-size: clamp(3rem, 4vw, 4.75rem);
+  line-height: .94;
+}
+
+.vant-presentation .vant-section-content .vant-section-heading h2 { font-size: clamp(3.75rem, 4.8vw, 5.25rem); }
+
+.vant-presentation .vant-section-content--split .vant-section-heading h2 {
+  max-width: 760px;
+  /* Idem: "acontece em uma" precisa caber numa linha da coluna de 7/12. */
+  font-size: clamp(3.25rem, 4.6vw, 5.5rem);
+  line-height: .93;
+  letter-spacing: -.06em;
+}
+
+.vant-presentation .vant-section-content .vant-section-aside p,
+.vant-presentation .vant-section-content .vant-section-aside .vant-presentation-lead {
+  max-width: 420px;
+  margin: 0;
+  font-size: clamp(1.125rem, 1.3vw, 1.375rem);
+  line-height: 1.6;
+  color: #c9c9c9;
+  text-wrap: pretty;
+}
+
+/* ---------- botoes da coluna de apoio ---------- */
+
+.vant-section-aside .vant-presentation-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  max-width: 420px;
+  margin-top: 32px;
+}
+
+.vant-section-aside .vant-presentation-button {
+  width: 100%;
+  min-height: 62px;
+  justify-content: space-between;
+}
+
+.vant-presentation .vant-section-content .vant-section-aside .vant-presentation-signature { margin-top: 22px; }
+
+/* ---------- tablet: 8 colunas ---------- */
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .vant-section-content {
+    width: min(calc(100% - 64px), 920px);
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
+  .vant-section-heading { grid-column: 1 / -1; }
+  .vant-section-content--split .vant-section-heading { grid-column: 1 / span 5; }
+  .vant-section-aside { grid-column: 6 / -1; }
+}
+
+/* Em tablet a coluna de apoio ficaria com menos de 40 caracteres por linha:
+   o texto desce para baixo do titulo, como manda o briefing. */
+@media (min-width: 768px) and (max-width: 1100px) {
+  .vant-section-content--split .vant-section-heading,
+  .vant-section-aside { grid-column: 1 / -1; }
+}
+
+/* ---------- mobile: coluna unica ---------- */
+
+@media (max-width: 767px) {
+  .vant-section-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 32px;
+    width: calc(100% - 48px);
+  }
+
+  .vant-presentation .vant-section-content .vant-section-heading h1,
+  .vant-presentation .vant-section-content .vant-section-heading h2,
+  .vant-presentation .vant-section-content--split .vant-section-heading h2 {
+    max-width: 100%;
+    font-size: clamp(2.625rem, 11vw, 3.75rem);
+    letter-spacing: -.04em;
+  }
+
+  .vant-presentation .vant-section-content .vant-section-aside p,
+  .vant-presentation .vant-section-content .vant-section-aside .vant-presentation-lead {
+    max-width: 100%;
+    font-size: clamp(1.0625rem, 4.4vw, 1.1875rem);
+  }
+
+  .vant-section-aside .vant-presentation-actions { max-width: 100%; }
+}
+
+/* ---------- a decoracao nao entra na area de leitura ---------- */
+
+@media (max-width: 1100px) {
+  .vant-presentation-hero,
+  .vant-presentation-section,
+  .vant-presentation-hero.vant-hero--composed,
+  .vant-presentation-section.vant-fold--composed {
+    padding-top: calc(var(--sym-size) + 3rem);
+  }
+
+  .vant-presentation-hero[data-symbol-side='left'] .vant-section-content,
+  .vant-presentation-section[data-symbol-side='left'] .vant-section-content {
+    padding-left: calc(var(--line-inset, 0px) + 22px);
+  }
+
+  .vant-presentation-hero[data-symbol-side='right'] .vant-section-content,
+  .vant-presentation-section[data-symbol-side='right'] .vant-section-content {
+    padding-right: calc(var(--line-inset, 0px) + 22px);
+  }
+}

@@ -34,16 +34,13 @@ function EcosystemVisual() {
 function HeroSection() {
   return (
     <section className="vant-presentation-hero vant-hero--composed" aria-labelledby="vant-hero-title">
-      <div className="vant-hero-stage">
-        <div className="vant-hero-title-area">
+      <div className="vant-section-content vant-section-content--split">
+        <div className="vant-section-heading vant-hero-title-area">
           <p className="brand-kicker" data-reveal="eyebrow">{heroContent.eyebrow}</p>
           <h1 id="vant-hero-title" data-reveal="title">{heroContent.title}</h1>
         </div>
 
-        {/* O objeto e fixo e viaja a pagina: aqui so a largura e reservada. */}
-        <div className="vant-hero-object-slot" aria-hidden="true" />
-
-        <div className="vant-hero-support">
+        <div className="vant-section-aside vant-hero-support">
           <p className="vant-presentation-lead" data-reveal="body">{heroContent.description}</p>
           <div className="vant-presentation-actions" data-reveal="body">
             <Link to={heroContent.primaryCta.href} className="brand-button-primary vant-presentation-button">
@@ -69,16 +66,13 @@ function SystemicVisionSection() {
       className="vant-presentation-section vant-systemic-vision vant-fold--composed"
       aria-labelledby="systemic-vision-title"
     >
-      <div className="vant-fold-stage">
-        <div className="vant-fold-lead">
+      <div className="vant-section-content vant-section-content--split">
+        <div className="vant-section-heading vant-fold-lead">
           <p className="brand-kicker" data-reveal="eyebrow">{systemicVision.eyebrow}</p>
           <h2 id="systemic-vision-title" data-reveal="title">{systemicVision.title}</h2>
         </div>
 
-        {/* A logo e a haste sao fixas: aqui so a largura central e reservada. */}
-        <div className="vant-fold-centre" aria-hidden="true" />
-
-        <div className="vant-fold-support">
+        <div className="vant-section-aside vant-fold-support">
           <p data-reveal="support">{systemicVision.description}</p>
         </div>
       </div>
@@ -89,11 +83,12 @@ function SystemicVisionSection() {
 function WorkMethodSection() {
   return (
     <section id="como-funciona" className="vant-presentation-section vant-work-method" aria-labelledby="work-method-title">
-      <div className="vant-presentation-section-copy">
+      <div className="vant-section-content">
+      <div className="vant-section-heading vant-presentation-section-copy">
         <p className="brand-kicker" data-reveal="eyebrow">COMO TRABALHAMOS</p>
         <h2 id="work-method-title" data-reveal="title">Primeiro entendemos. Depois construímos.</h2>
       </div>
-      <ol className="vant-method-steps" data-reveal="grid">
+      <ol className="vant-method-steps vant-section-full" data-reveal="grid">
         {howWeWorkSteps.map((step) => (
           <li key={step.number}>
             <span>{step.number}</span>
@@ -104,6 +99,7 @@ function WorkMethodSection() {
           </li>
         ))}
       </ol>
+      </div>
     </section>
   );
 }
@@ -111,11 +107,12 @@ function WorkMethodSection() {
 function BusinessUnitsSection() {
   return (
     <section id="solucoes" className="vant-presentation-section vant-business-units" aria-labelledby="business-units-title">
-      <div className="vant-presentation-section-copy">
+      <div className="vant-section-content">
+      <div className="vant-section-heading vant-presentation-section-copy">
         <p className="brand-kicker" data-reveal="eyebrow">DUAS FRENTES, UMA ESTRATÉGIA</p>
         <h2 id="business-units-title" data-reveal="title">Uma estratégia. Duas frentes complementares.</h2>
       </div>
-      <div className="vant-business-units-grid" data-reveal="grid">
+      <div className="vant-business-units-grid vant-section-full" data-reveal="grid">
         {studioBusiness.map((unit, index) => (
           <article key={unit.name} className="vant-business-unit-card">
             <p className="vant-business-unit-index">0{index + 1}</p>
@@ -127,7 +124,8 @@ function BusinessUnitsSection() {
           </article>
         ))}
       </div>
-      <p className="vant-business-units-note">Studio gera e fortalece a demanda. Business organiza, converte e escala.</p>
+      <p className="vant-business-units-note vant-section-full">Studio gera e fortalece a demanda. Business organiza, converte e escala.</p>
+      </div>
     </section>
   );
 }
@@ -135,11 +133,12 @@ function BusinessUnitsSection() {
 function GrowthSystemSection() {
   return (
     <section className="vant-presentation-section vant-growth-system" aria-labelledby="growth-system-title">
-      <div className="vant-presentation-section-copy">
+      <div className="vant-section-content">
+      <div className="vant-section-heading vant-presentation-section-copy">
         <p className="brand-kicker" data-reveal="eyebrow">DO DIAGNÓSTICO À TRAÇÃO</p>
         <h2 id="growth-system-title" data-reveal="title">VANT Growth System.</h2>
       </div>
-      <div className="vant-growth-system-grid" data-reveal="grid">
+      <div className="vant-growth-system-grid vant-section-full" data-reveal="grid">
         {growthSystem.map((item) => (
           <article key={item.letter}>
             <span aria-hidden="true">{item.letter}</span>
@@ -150,6 +149,7 @@ function GrowthSystemSection() {
           </article>
         ))}
       </div>
+      </div>
     </section>
   );
 }
@@ -157,11 +157,12 @@ function GrowthSystemSection() {
 function ChallengeSquadsSection() {
   return (
     <section className="vant-presentation-section vant-challenge-squads" aria-labelledby="challenge-squads-title">
-      <div className="vant-presentation-section-copy">
+      <div className="vant-section-content">
+      <div className="vant-section-heading vant-presentation-section-copy">
         <p className="brand-kicker" data-reveal="eyebrow">NÃO EXISTE PACOTE PADRÃO</p>
         <h2 id="challenge-squads-title" data-reveal="title">O projeto é montado de acordo com o desafio.</h2>
       </div>
-      <div className="vant-squads-table" data-reveal="grid" role="table" aria-label="Squads por desafio">
+      <div className="vant-squads-table vant-section-full" data-reveal="grid" role="table" aria-label="Squads por desafio">
         <div className="vant-squads-table-head" role="row">
           <span role="columnheader">Situação</span>
           <span role="columnheader">Competências</span>
@@ -175,9 +176,10 @@ function ChallengeSquadsSection() {
           </div>
         ))}
       </div>
-      <Link to="/diagnostico" className="brand-button-primary vant-presentation-button vant-intermediate-cta" data-reveal="grid">
+      <Link to="/diagnostico" className="brand-button-primary vant-presentation-button vant-intermediate-cta vant-section-full" data-reveal="grid">
         Descobrir meus gargalos <span aria-hidden="true">→</span>
       </Link>
+      </div>
     </section>
   );
 }
@@ -187,16 +189,18 @@ function TeamSection() {
 
   return (
     <section id="especialistas" className="vant-presentation-section vant-team-section" aria-labelledby="team-title">
-      <div className="vant-presentation-section-copy">
+      <div className="vant-section-content">
+      <div className="vant-section-heading vant-presentation-section-copy">
         <p className="brand-kicker" data-reveal="eyebrow">ESPECIALISTAS VANT</p>
         <h2 id="team-title" data-reveal="title">Especialistas diferentes. Trabalhando sobre o mesmo resultado.</h2>
         <p>Cada profissional lidera uma competência, mas todos trabalham sobre uma mesma estratégia: gerar resultado real para o cliente.</p>
       </div>
       {membersWithPortraits.length > 0 ? (
-        <div className="vant-team-grid" data-reveal="grid">
+        <div className="vant-team-grid vant-section-full" data-reveal="grid">
           {membersWithPortraits.map((member) => <TeamCard key={member.name} member={member} />)}
         </div>
       ) : null}
+      </div>
     </section>
   );
 }
@@ -205,7 +209,8 @@ function FinalDiagnosticCta() {
   return (
     <section className="vant-presentation-section vant-final-diagnostic-cta" aria-labelledby="final-diagnostic-title">
       <div className="vant-final-diagnostic-ornament" aria-hidden="true" />
-      <div className="vant-final-diagnostic-content">
+      <div className="vant-section-content">
+      <div className="vant-final-diagnostic-content vant-section-full">
         <p className="brand-kicker" data-reveal="eyebrow">PRÓXIMO PASSO</p>
         <h2 id="final-diagnostic-title" data-reveal="title">{finalDiagnosticCta.title}</h2>
         <p>{finalDiagnosticCta.description}</p>
@@ -215,6 +220,7 @@ function FinalDiagnosticCta() {
         <ul className="vant-final-diagnostic-benefits" data-reveal="grid">
           {finalDiagnosticCta.benefits.map((benefit) => <li key={benefit}>{benefit}</li>)}
         </ul>
+      </div>
       </div>
     </section>
   );
